@@ -17,7 +17,8 @@
     "lint": "tsdx lint",
     "scss": "npx node-sass --output-style compressed -o src/css src/scss",
     "serve": "npx parcel --no-cache --port 8080 src/index.html",
-    "bundle": "yarn scss && npx parcel build --no-cache src/index.html"
+    "bundle": "yarn scss && npx parcel build --no-cache src/index.html --public-url /liquid.coach",
+    "deploy": "npx push-dir --dir=dist --branch=gh-pages"
   },
   "peerDependencies": {
     "react": ">=16"
@@ -48,14 +49,12 @@
     "husky": "^4.2.5",
     "liquidjs-lib": "vulpemventures/liquidjs-lib",
     "parcel-bundler": "^1.12.4",
+    "push-dir": "^0.4.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "sass": "^1.26.3",
     "tsdx": "^0.13.1",
     "tslib": "^1.11.1",
     "typescript": "^3.8.3"
-  },
-  "dependencies": {
-    "circle": "^1.0.0"
   }
 }

@@ -11,6 +11,8 @@ const Create: React.FunctionComponent<Props> = props => {
   const [utxoIndex, setUtxoIndex] = useState(0);
   const [inputs, setInputs] = useState([]);
 
+  console.log(inputAssetIndex);
+
   const outputAsset = useRef(null);
   const outputValue = useRef(null);
   const outputAddress = useRef(null);
@@ -20,7 +22,10 @@ const Create: React.FunctionComponent<Props> = props => {
   const utxos: Array<any> = (utxosByAsset as any)[assets[inputAssetIndex]];
 
   const addInput = () => setInputs((is: any) => is.concat([utxos[utxoIndex]]));
-  const onAssetChange = (e: any) => setInputAssetIndex(e.target.value);
+  const onAssetChange = (e: any) => {
+    setInputAssetIndex(e.target.value);
+    setUtxoIndex(0);
+  };
   const onUtxoChange = (e: any) => setUtxoIndex(e.target.value);
 
   const addOutput = () =>
