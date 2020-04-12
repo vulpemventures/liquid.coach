@@ -1,44 +1,40 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Layout from './components/Layout';
 import Load from './components/Load';
 import Wallet from './components/Wallet';
+import useGlobalStorage from 'use-global-storage';
 
 interface Props {}
 
-interface State {
-  address: string;
-  isLoaded: Boolean;
-}
+const App: React.FunctionComponent<Props> = () => {
+  const useStorage = useGlobalStorage({
+    storageOptions: { name: 'liquid-coach-db' },
+  });
+  const [identity, setIdentity] = useStorage('identity', null);
+  const [, setNetwork] = useStorage('network', {});
 
-class App extends Component<Props, State> {
-  state = {
-    address: '',
-    isLoaded: false,
-  };
-
-  render() {
-    return (
-      <div>
-        <Layout title="🏋️‍♂️ Liquid.Coach">
+  return (
+    <div>
+      <Layout title="🏋️‍♂️ Liquid.Coach" onClean={() => setIdentity(null)}>
+        <div className="container">
           <div className="container">
-            <div className="container">
-              <div className="columns">
-                {!this.state.isLoaded ? (
-                  <Load
-                    onLoad={(address: string) =>
-                      this.setState({ address, isLoaded: true })
-                    }
-                  />
-                ) : (
-                  <Wallet address={this.state.address} />
-                )}
-              </div>
+            <div className="columns">
+              {!identity ? (
+                <Load
+                  onLoad={(xpubOrAddress: string, selectedNetwork: any) => {
+                    setIdentity(xpubOrAddress);
+                    setNetwork(selectedNetwork);
+                  }}
+                />
+              ) : (
+                <Wallet identity={identity} />
+              )}
             </div>
           </div>
-        </Layout>
-      </div>
-    );
-  }
-}
+        </div>
+      </Layout>
+    </div>
+  );
+};
 
 export default App;

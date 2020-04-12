@@ -139,6 +139,7 @@ const Create: React.FunctionComponent<Props> = props => {
                 className="input is-medium is-fullwidth"
                 type="text"
                 name="asset"
+                placeholder="Asset hash"
                 ref={register({ required: true })}
               />
               {errors.asset && (
@@ -153,6 +154,7 @@ const Create: React.FunctionComponent<Props> = props => {
                 className="input is-medium is-fullwidth"
                 name="address"
                 type="text"
+                placeholder="Unconfidential address only"
                 ref={register({ required: true })}
               />
               {errors.address && (
@@ -167,6 +169,7 @@ const Create: React.FunctionComponent<Props> = props => {
                 className="input is-medium is-fullwidth"
                 name="amount"
                 type="number"
+                placeholder="In satoshis"
                 ref={register({ required: true })}
               />
               {errors.amount && (

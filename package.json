@@ -45,7 +45,9 @@
     "@types/jest": "^25.2.1",
     "@types/react": "^16.9.34",
     "@types/react-dom": "^16.9.6",
+    "bip32": "^2.0.5",
     "bulma": "^0.8.2",
+    "bulma-switch": "^2.0.0",
     "husky": "^4.2.5",
     "liquidjs-lib": "vulpemventures/liquidjs-lib",
     "parcel-bundler": "^1.12.4",
@@ -56,9 +58,7 @@
     "sass": "^1.26.3",
     "tsdx": "^0.13.1",
     "tslib": "^1.11.1",
-    "typescript": "^3.8.3"
-  },
-  "dependencies": {
-    "js": "^0.1.0"
+    "typescript": "^3.8.3",
+    "use-global-storage": "^0.1.0"
   }
 }

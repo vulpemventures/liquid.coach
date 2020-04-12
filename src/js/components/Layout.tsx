@@ -2,14 +2,22 @@ import React from 'react';
 
 interface Props {
   title?: string;
+  onClean?(): void;
 }
 
 class Layout extends React.Component<Props> {
   render() {
+    const withCleanButton = this.props.onClean ? (
+      <span className="button is-pulled-right" onClick={this.props.onClean}>
+        Clean
+      </span>
+    ) : null;
+
     const withTitle = this.props.title ? (
       <section className="hero is-light">
         <div className="hero-body">
           <div className="container">
+            {withCleanButton}
             <div className="columns">
               <div className="column has-text-centered">
                 <h1 className="title">{this.props.title}</h1>
@@ -26,6 +34,8 @@ class Layout extends React.Component<Props> {
         <div
           style={{
             paddingTop: '5rem',
+            paddingRight: '1rem',
+            paddingLeft: '1rem',
             paddingBottom: '5rem',
           }}
         >

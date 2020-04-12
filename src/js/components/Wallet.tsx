@@ -4,7 +4,7 @@ import Balances from './Balances';
 import Create from './CreateTx';
 
 interface Props {
-  address: string;
+  identity: string;
 }
 
 interface State {
