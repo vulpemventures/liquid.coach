@@ -17,7 +17,7 @@
     "lint": "tsdx lint",
     "scss": "npx node-sass --output-style compressed -o src/css src/scss",
     "serve": "npx parcel --no-cache --port 8080 src/index.html",
-    "bundle": "yarn scss && npx parcel build --no-cache src/index.html --public-url /liquid.coach",
+    "bundle": "yarn scss && yarn build && npx parcel build --no-cache src/index.html --public-url /liquid.coach",
     "deploy": "npx push-dir --dir=dist --branch=gh-pages"
   },
   "peerDependencies": {
