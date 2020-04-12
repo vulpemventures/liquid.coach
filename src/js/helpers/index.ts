@@ -16,3 +16,11 @@ export function toHumanFriendlyString(x: string) {
 
   return `${previewPrefix}...${previewSuffix}`;
 }
+
+export function fromSatoshi(x: number) {
+  return Math.floor(x) / Math.pow(10, 8);
+}
+
+export function toSatoshi(x: number) {
+  return Math.floor(x * Math.pow(10, 8));
+}

@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
 
 import { isValidXpub, isValidAddress } from '../helpers';
-import { networks, Network } from 'liquidjs-lib';
+import { networks } from 'liquidjs-lib';
 
 interface Props {
-  onLoad(identity: string, network: Network): void;
+  onLoad(identity: string, network: string): void;
 }
 
 const Load: React.FunctionComponent<Props> = props => {
@@ -14,14 +14,15 @@ const Load: React.FunctionComponent<Props> = props => {
   const checkInput = () => {
     if (!pubkey || !pubkey.current) return alert('Missing extended public key');
 
+    const networkString: string = isLiquid ? 'liquid' : 'regtest';
     const pub: any = (pubkey.current as any).value;
-    const network: Network = isLiquid
-      ? (networks as any).bitcoin
-      : networks.regtest;
-    if (!isValidXpub(pub, network) && !isValidAddress(pub, network))
+    if (
+      !isValidXpub(pub, (networks as any)[networkString]) &&
+      !isValidAddress(pub, (networks as any)[networkString])
+    )
       return alert('Xpub or Adrress is not valid');
 
-    props.onLoad(pub, network);
+    props.onLoad(pub, networkString);
   };
 
   return (

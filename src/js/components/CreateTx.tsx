@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
-import InputWithCopy from './InputWithCopy';
+import InputWithCopy from '../elements/InputWithCopy';
 import { validate, toHumanFriendlyString } from '../helpers';
 
 interface Props {
   utxos: Object;
+  lbtc: string;
 }
 
 const Create: React.FunctionComponent<Props> = props => {
-  const utxosByAsset = props.utxos;
+  const { utxos: utxosByAsset, lbtc } = props;
 
   const [inputAssetIndex, setInputAssetIndex] = useState(0);
   const [utxoIndex, setUtxoIndex] = useState(0);
@@ -75,7 +76,7 @@ const Create: React.FunctionComponent<Props> = props => {
               <select value={inputAssetIndex} onChange={onAssetChange}>
                 {assets.map((a: any, i: number) => (
                   <option key={i} value={i}>
-                    {a}
+                    {a === lbtc ? 'L-BTC' : toHumanFriendlyString(a)}
                   </option>
                 ))}
               </select>
@@ -113,7 +114,7 @@ const Create: React.FunctionComponent<Props> = props => {
                 className="button is-medium is-fullwidth"
                 style={{ borderColor: 'transparent' }}
               >
-                {i.asset}
+                {i.asset === lbtc ? 'L-BTC' : i.asset}
               </button>
               <button
                 className="button is-medium is-fullwidth"

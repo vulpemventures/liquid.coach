@@ -10,24 +10,31 @@ const App: React.FunctionComponent<Props> = () => {
   const useStorage = useGlobalStorage({
     storageOptions: { name: 'liquid-coach-db' },
   });
-  const [identity, setIdentity] = useStorage('identity', null);
-  const [, setNetwork] = useStorage('network', {});
+
+  const [state, setState] = useStorage('state', null);
 
   return (
     <div>
-      <Layout title="🏋️‍♂️ Liquid.Coach" onClean={() => setIdentity(null)}>
+      <Layout
+        title="🏋️‍♂️ Liquid.Coach"
+        onClean={() => {
+          setState(null);
+        }}
+      >
         <div className="container">
           <div className="container">
             <div className="columns">
-              {!identity ? (
+              {!state ? (
                 <Load
                   onLoad={(xpubOrAddress: string, selectedNetwork: any) => {
-                    setIdentity(xpubOrAddress);
-                    setNetwork(selectedNetwork);
+                    setState({
+                      identity: xpubOrAddress,
+                      network: selectedNetwork,
+                    });
                   }}
                 />
               ) : (
-                <Wallet identity={identity} />
+                <Wallet identity={state.identity} network={state.network} />
               )}
             </div>
           </div>
