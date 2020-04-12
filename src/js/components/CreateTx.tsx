@@ -1,4 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+
+import InputWithCopy from './InputWithCopy';
+import { validate, toHumanFriendlyString } from '../helpers';
 
 interface Props {
   utxos: Object;
@@ -10,13 +14,8 @@ const Create: React.FunctionComponent<Props> = props => {
   const [inputAssetIndex, setInputAssetIndex] = useState(0);
   const [utxoIndex, setUtxoIndex] = useState(0);
   const [inputs, setInputs] = useState([]);
-
-  console.log(inputAssetIndex);
-
-  const outputAsset = useRef(null);
-  const outputValue = useRef(null);
-  const outputAddress = useRef(null);
   const [outputs, setOutputs] = useState([]);
+  const [encoded, encodeTx] = useState(false);
 
   const assets: Array<string> = Object.keys(utxosByAsset);
   const utxos: Array<any> = (utxosByAsset as any)[assets[inputAssetIndex]];
@@ -28,16 +27,42 @@ const Create: React.FunctionComponent<Props> = props => {
   };
   const onUtxoChange = (e: any) => setUtxoIndex(e.target.value);
 
-  const addOutput = () =>
+  const { register, handleSubmit, errors, setError } = useForm();
+
+  const addOutput = ({
+    amount,
+    asset,
+    address,
+  }: {
+    amount: number;
+    asset: string;
+    address: string;
+  }) => {
+    if (!validate(asset, 'asset')) {
+      setError('asset' as any);
+      return;
+    }
+
+    if (!validate(address, 'address')) {
+      setError('address' as any);
+      return;
+    }
+
+    if (!validate(amount, 'amount')) {
+      setError('amount' as any);
+      return;
+    }
+
     setOutputs((os: any) =>
       os.concat([
         {
-          value: (outputValue.current as any).value,
-          asset: (outputAsset.current as any).value,
-          address: (outputAddress.current as any).value,
+          value: amount,
+          asset,
+          address,
         },
       ])
     );
+  };
 
   return (
     <div>
@@ -62,7 +87,7 @@ const Create: React.FunctionComponent<Props> = props => {
               <select value={utxoIndex} onChange={onUtxoChange}>
                 {utxos.map((u: any, i: number) => (
                   <option key={i} value={i}>
-                    {u.txid + ' ' + u.value}
+                    {toHumanFriendlyString(u.txid) + ' ' + u.value}
                   </option>
                 ))}
               </select>
@@ -94,7 +119,7 @@ const Create: React.FunctionComponent<Props> = props => {
                 className="button is-medium is-fullwidth"
                 style={{ borderColor: 'transparent' }}
               >
-                {i.txid + ' ' + i.value}
+                {toHumanFriendlyString(i.txid) + ' ' + i.value}
               </button>
             </div>
           ))}
@@ -103,43 +128,66 @@ const Create: React.FunctionComponent<Props> = props => {
 
       <div className="box">
         <h1 className="title">Outputs</h1>
-        <div className="field has-addons">
-          <div className="control is-expanded has-text-centered">
-            <label className="label">Asset</label>
-            <input
-              className="input is-medium is-fullwidth"
-              type="text"
-              ref={outputAsset}
-            />
+        <form
+          className="form"
+          onSubmit={handleSubmit((data: any) => addOutput(data))}
+        >
+          <div className="field has-addons">
+            <div className="control is-expanded has-text-centered">
+              <label className="label">Asset</label>
+              <input
+                className="input is-medium is-fullwidth"
+                type="text"
+                name="asset"
+                ref={register({ required: true })}
+              />
+              {errors.asset && (
+                <div className="notification is-danger">
+                  This field is not valid
+                </div>
+              )}
+            </div>
+            <div className="control is-expanded has-text-centered">
+              <label className="label">Address</label>
+              <input
+                className="input is-medium is-fullwidth"
+                name="address"
+                type="text"
+                ref={register({ required: true })}
+              />
+              {errors.address && (
+                <div className="notification is-danger">
+                  This field is not valid
+                </div>
+              )}
+            </div>
+            <div className="control is-expanded has-text-centered">
+              <label className="label">Amount</label>
+              <input
+                className="input is-medium is-fullwidth"
+                name="amount"
+                type="number"
+                ref={register({ required: true })}
+              />
+              {errors.amount && (
+                <div className="notification is-danger">
+                  This field is not valid
+                </div>
+              )}
+            </div>
+            <div className="control">
+              <label style={{ visibility: 'hidden' }} className="label">
+                <span role="img" aria-label="vulpem">
+                  🦊
+                </span>
+              </label>
+              <button type="submit" className="button is-link is-medium">
+                {' '}
+                Add{' '}
+              </button>
+            </div>
           </div>
-          <div className="control is-expanded has-text-centered">
-            <label className="label">Address</label>
-            <input
-              className="input is-medium is-fullwidth"
-              type="text"
-              ref={outputAddress}
-            />
-          </div>
-          <div className="control is-expanded has-text-centered">
-            <label className="label">Amount</label>
-            <input
-              className="input is-medium is-fullwidth"
-              type="number"
-              ref={outputValue}
-            />
-          </div>
-          <div className="control">
-            <label style={{ visibility: 'hidden' }} className="label">
-              <span role="img" aria-label="vulpem">
-                🦊
-              </span>
-            </label>
-            <button className="button is-link is-medium" onClick={addOutput}>
-              {' '}
-              Add{' '}
-            </button>
-          </div>
-        </div>
+        </form>
 
         <span>
           {outputs.map((o: any, index: number) => (
@@ -148,13 +196,13 @@ const Create: React.FunctionComponent<Props> = props => {
                 className="button is-medium is-fullwidth"
                 style={{ borderColor: 'transparent' }}
               >
-                {o.asset}
+                {toHumanFriendlyString(o.asset)}
               </button>
               <button
                 className="button is-medium is-fullwidth"
                 style={{ borderColor: 'transparent' }}
               >
-                {o.address}
+                {toHumanFriendlyString(o.address)}
               </button>
               <button
                 className="button is-medium is-fullwidth"
@@ -165,6 +213,17 @@ const Create: React.FunctionComponent<Props> = props => {
             </div>
           ))}
         </span>
+      </div>
+
+      <div className="box is-centered">
+        <button className="button is-large" onClick={() => encodeTx(true)}>
+          Encode to PSBT format
+        </button>
+        <br />
+        <br />
+        {encoded && (
+          <InputWithCopy value="eqfcjahdjcbwdjksbckjbdscjkbjkdscbkj" />
+        )}
       </div>
     </div>
   );
