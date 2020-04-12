@@ -1,41 +1,82 @@
 import React from 'react';
 
-import Balances from './Balances';
 import Create from './CreateTx';
+
+import Balances from '../elements/Balances';
+import Spinner from '../elements/Spinner';
+
+import { fetchBalances, EXPLORER_URL } from '../wallet';
+import { networks } from 'liquidjs-lib';
 
 interface Props {
   identity: string;
+  network: string;
 }
 
 interface State {
   showCreate: Boolean;
   showImport: Boolean;
+  hasBalances: Boolean;
+  isLoading: Boolean;
+  utxos: any;
+  balances: any;
 }
-
-const utxos = {
-  'L-BTC': [
-    { txid: 'foo', value: 1000, asset: 'aaa' },
-    { txid: 'bar', value: 5000, asset: 'bbb' },
-  ],
-  'L-USDT': [{ txid: 'franchi', value: 400, asset: 'ccc' }],
-};
-
-const balances = [
-  [0.085, 'LBTC'],
-  [55, 'USDT'],
-];
 
 export default class Wallet extends React.Component<Props, State> {
   state = {
     showCreate: false,
     showImport: false,
+    hasBalances: false,
+    balances: {},
+    utxos: {},
+    isLoading: true,
   };
 
+  componentDidMount() {
+    const { identity, network } = this.props;
+
+    //TODO now we accept only addresses, check all possible derivation in future.
+    fetchBalances(identity, (EXPLORER_URL as any)[network])
+      .then((data: any) => {
+        console.log(data);
+        if (Object.keys(data.utxos).length > 0)
+          this.setState({
+            balances: data.balances,
+            utxos: data.utxos,
+            hasBalances: true,
+            isLoading: false,
+          });
+        else this.setState({ isLoading: false });
+      })
+      .catch(console.error);
+  }
+
   render() {
-    const { showCreate, showImport } = this.state;
+    const { network } = this.props;
+    const {
+      showCreate,
+      showImport,
+      balances,
+      hasBalances,
+      isLoading,
+      utxos,
+    } = this.state;
+
+    const LBTC_ASSET_HASH = (networks as any)[network].assetHash;
+
     return (
       <div className="column has-text-centered">
-        <Balances balances={balances} />
+        {!isLoading && hasBalances && (
+          <Balances balances={balances} lbtc={LBTC_ASSET_HASH} />
+        )}
+        {!isLoading && !hasBalances && (
+          <h1 className="title is-6">
+            {' '}
+            You don't have any unspent output. Your balances will appear here.{' '}
+          </h1>
+        )}
+        {isLoading && <Spinner />}
+        <br />
         <p className="subtitle is-4">Transaction</p>
         <button
           className={`button is-large ${showCreate && `is-link`}`}
@@ -67,7 +108,7 @@ export default class Wallet extends React.Component<Props, State> {
         </button>
         <br />
         <br />
-        {showCreate && <Create utxos={utxos} />}
+        {showCreate && <Create utxos={utxos} lbtc={LBTC_ASSET_HASH} />}
         {showImport && <p className="subtitle">Coming soon</p>}
       </div>
     );

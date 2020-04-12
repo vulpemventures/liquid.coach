@@ -19,7 +19,10 @@ const Circle: React.FunctionComponent<Props> = props => {
       <div className="hero-body">
         <div className="container">
           <p className="subtitle is-5 has-text-white"> {props.asset}</p>
-          <h1 className="title is-1 has-text-white"> {props.balance} </h1>
+          <h1 className="title is-2 has-text-white">
+            {' '}
+            {props.balance.toLocaleString()}{' '}
+          </h1>
         </div>
       </div>
     </div>

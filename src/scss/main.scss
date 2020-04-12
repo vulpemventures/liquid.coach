@@ -2,7 +2,7 @@
 
 @import "../../node_modules/bulma/sass/utilities/initial-variables";
 // Import a Google Font
-@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+@import url("https://fonts.googleapis.com/css?family=Nunito:400,700");
 
 // Set your brand colors
 $white: #ffffff;
@@ -33,4 +33,5 @@ $input-background-color: $powderWhite;
 
 // Import the rest of Bulma
 @import "../../node_modules/bulma/bulma";
-@import '../../node_modules/bulma-switch/dist/css/bulma-switch';
+@import "../../node_modules/bulma-switch/dist/css/bulma-switch";
+@import "./loader";
