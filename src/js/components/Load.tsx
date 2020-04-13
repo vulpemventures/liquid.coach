@@ -47,6 +47,10 @@ const Load: React.FunctionComponent<Props> = props => {
       <button className="button is-link is-large" onClick={checkInput}>
         Load
       </button>
+      <br />
+      <br />
+      <p className="subtitle">or create a new one...</p>
+      <button className="button is-primary is-large">Generate</button>
     </div>
   );
 };

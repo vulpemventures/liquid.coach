@@ -38,7 +38,6 @@ export default class Wallet extends React.Component<Props, State> {
     //TODO now we accept only addresses, check all possible derivation in future.
     fetchBalances(identity, (EXPLORER_URL as any)[network])
       .then((data: any) => {
-        console.log(data);
         if (Object.keys(data.utxos).length > 0)
           this.setState({
             balances: data.balances,
@@ -52,7 +51,7 @@ export default class Wallet extends React.Component<Props, State> {
   }
 
   render() {
-    const { network } = this.props;
+    const { network, identity } = this.props;
     const {
       showCreate,
       showImport,
@@ -108,7 +107,14 @@ export default class Wallet extends React.Component<Props, State> {
         </button>
         <br />
         <br />
-        {showCreate && <Create utxos={utxos} lbtc={LBTC_ASSET_HASH} />}
+        {!isLoading && showCreate && (
+          <Create
+            utxos={utxos}
+            lbtc={LBTC_ASSET_HASH}
+            identity={identity}
+            network={network}
+          />
+        )}
         {showImport && <p className="subtitle">Coming soon</p>}
       </div>
     );
