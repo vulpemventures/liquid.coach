@@ -3,6 +3,7 @@ import { copyToClipboard } from 'copy-lite';
 
 interface Props {
   value: string;
+  bgColor?: string;
 }
 export const InputWithCopy: React.FunctionComponent<Props> = props => {
   const [copySuccess, setCopySuccess] = useState('');
@@ -13,11 +14,12 @@ export const InputWithCopy: React.FunctionComponent<Props> = props => {
   };
 
   return (
-    <div className="notification is-success">
+    <div className={`notification ${props.bgColor || 'is-success'}`}>
       <button className="button is-pulled-right" onClick={copy}>
         Copy
       </button>
       <p className="subtitle">{copySuccess}</p>
+      <br />
       <p className="subtitle">{props.value}</p>
     </div>
   );

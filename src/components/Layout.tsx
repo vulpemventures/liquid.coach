@@ -53,7 +53,13 @@ class Layout extends React.Component<Props> {
           }}
         >
           <p>
-            <a href="https://vulpem.com">© Vulpem Ventures OU</a>
+            <a
+              href="https://vulpem.com"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              © Vulpem Ventures OU
+            </a>
           </p>
         </footer>
       </div>

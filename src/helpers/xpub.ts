@@ -4,7 +4,7 @@
   https://github.com/satoshilabs/slips/blob/master/slip-0132.md
 */
 import b58 from 'bs58check';
-import bip32 from 'bip32';
+import * as bip32 from 'bip32';
 import { address, Network } from 'liquidjs-lib';
 
 const prefixes = new Map([
@@ -51,7 +51,6 @@ export function changeVersionBytes(xpub: string, targetFormat: string) {
 
 export function isValidXpub(xpub: string, network: Network): Boolean {
   try {
-    //bip32.fromBase58(xpub, network).derive(0).derive(addressIndex).publicKey
     bip32.fromBase58(xpub, network);
   } catch (e) {
     return false;

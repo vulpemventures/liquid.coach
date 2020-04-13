@@ -1,7 +1,11 @@
 import React, { useState, useRef } from 'react';
 
-import { isValidXpub, isValidAddress } from '../helpers';
-import { networks } from 'liquidjs-lib';
+import { networks, Network, payments } from 'liquidjs-lib';
+import * as bip39 from 'bip39';
+import * as bip32 from 'bip32';
+
+import InputWithCopy from '../elements/InputWithCopy';
+import { isValidXpub, isValidAddress, changeVersionBytes } from '../helpers';
 
 interface Props {
   onLoad(identity: string, network: string): void;
@@ -9,20 +13,74 @@ interface Props {
 
 const Load: React.FunctionComponent<Props> = props => {
   const [isLiquid, setIsLiquid] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const pubkey = useRef(null);
 
-  const checkInput = () => {
-    if (!pubkey || !pubkey.current) return alert('Missing extended public key');
+  const networkString: string = isLiquid ? 'liquid' : 'regtest';
+  const currentNetwork: Network = (networks as any)[networkString];
 
-    const networkString: string = isLiquid ? 'liquid' : 'regtest';
+  const checkInput = () => {
+    if (!pubkey || !pubkey.current)
+      return alert('Missing either address or extended public key');
+
     const pub: any = (pubkey.current as any).value;
     if (
-      !isValidXpub(pub, (networks as any)[networkString]) &&
-      !isValidAddress(pub, (networks as any)[networkString])
+      !isValidXpub(pub, currentNetwork) &&
+      !isValidAddress(pub, currentNetwork)
     )
-      return alert('Xpub or Adrress is not valid');
+      return alert('Xpub or Segwit Address is not valid');
 
     props.onLoad(pub, networkString);
+  };
+
+  const confirmModal = () => {
+    const mnemonic = bip39.generateMnemonic();
+    if (!bip39.validateMnemonic(mnemonic)) return alert('Something went wrong');
+
+    const seed = bip39.mnemonicToSeedSync(mnemonic);
+    const root = bip32.fromSeed(seed, currentNetwork);
+    const xpub = root.toBase58();
+    const vpub = changeVersionBytes(xpub, 'vpub');
+
+    return (
+      <div className="modal is-active">
+        <div className="modal-background"></div>
+        <div className="modal-card">
+          <header className="modal-card-head">
+            <p className="modal-card-title">Liquid regtest wallet</p>
+          </header>
+          <section className="modal-card-body">
+            <label className="label">Mnemonic</label>
+            <p className="subtitle is-6">
+              You will never see it again. You may want to write it down
+            </p>
+            <InputWithCopy value={mnemonic} bgColor="is-info is-light" />
+            <label className="label">Extended public key</label>
+            <InputWithCopy value={vpub} bgColor="is-info is-light" />
+          </section>
+          <footer className="modal-card-foot">
+            <button
+              className="button is-primary"
+              onClick={() => {
+                const node = root.derivePath("m/84'/1'/0'/0");
+                const wpkh = payments.p2wpkh({
+                  pubkey: node.publicKey,
+                  network: currentNetwork,
+                });
+
+                props.onLoad(wpkh.address!, networkString);
+              }}
+            >
+              Confirm
+            </button>
+            <button className="button" onClick={() => setShowConfirm(false)}>
+              Cancel
+            </button>
+          </footer>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -49,8 +107,18 @@ const Load: React.FunctionComponent<Props> = props => {
       </button>
       <br />
       <br />
-      <p className="subtitle">or create a new one...</p>
-      <button className="button is-primary is-large">Generate</button>
+      {!isLiquid && (
+        <div>
+          <p className="subtitle">or create a new one...</p>
+          <button
+            className="button is-primary is-large"
+            onClick={() => setShowConfirm(true)}
+          >
+            Generate
+          </button>
+          {showConfirm && confirmModal()}
+        </div>
+      )}
     </div>
   );
 };

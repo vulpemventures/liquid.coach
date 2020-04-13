@@ -46,6 +46,7 @@
     "@types/react": "^16.9.34",
     "@types/react-dom": "^16.9.6",
     "bip32": "^2.0.5",
+    "bip39": "^3.0.2",
     "bulma": "^0.8.2",
     "bulma-switch": "^2.0.0",
     "copy-lite": "^0.1.2",

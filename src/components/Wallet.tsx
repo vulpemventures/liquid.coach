@@ -6,7 +6,7 @@ import Decode from './DecodeTx';
 import Balances from '../elements/Balances';
 import Spinner from '../elements/Spinner';
 
-import { fetchBalances, EXPLORER_URL } from '../wallet';
+import { fetchBalances, faucet, EXPLORER_URL } from '../wallet';
 import { networks } from 'liquidjs-lib';
 
 interface Props {
@@ -34,9 +34,14 @@ export default class Wallet extends React.Component<Props, State> {
   };
 
   componentDidMount() {
+    this.getBalances();
+  }
+
+  getBalances = () => {
+    this.setState({ isLoading: true });
+
     const { identity, network } = this.props;
 
-    //TODO now we accept only addresses, check all possible derivation in future.
     fetchBalances(identity, (EXPLORER_URL as any)[network])
       .then((data: any) => {
         if (Object.keys(data.utxos).length > 0)
@@ -47,9 +52,29 @@ export default class Wallet extends React.Component<Props, State> {
             isLoading: false,
           });
         else this.setState({ isLoading: false });
+
+        return;
       })
-      .catch(console.error);
-  }
+      .catch(e => {
+        console.error(e);
+        alert('Something went wrong. Explorer may be down');
+        this.setState({ isLoading: false });
+      });
+  };
+
+  callFaucet = () => {
+    this.setState({ isLoading: true });
+
+    faucet(this.props.identity, EXPLORER_URL.regtest)
+      .then(() => {
+        return this.getBalances();
+      })
+      .catch(e => {
+        console.error(e);
+        alert('Something went wrong. Explorer may be down');
+        this.setState({ isLoading: false });
+      });
+  };
 
   render() {
     const { network, identity } = this.props;
@@ -63,51 +88,79 @@ export default class Wallet extends React.Component<Props, State> {
     } = this.state;
 
     const LBTC_ASSET_HASH = (networks as any)[network].assetHash;
+    const isRegtest = network === 'regtest';
 
     return (
       <div className="column has-text-centered">
+        <h1 className="title is-4">{identity}</h1>
         {!isLoading && hasBalances && (
           <Balances balances={balances} lbtc={LBTC_ASSET_HASH} />
         )}
+        <br />
         {!isLoading && !hasBalances && (
-          <h1 className="title is-6">
+          <p className="subtitle is-6">
             {' '}
             You don't have any unspent output. Your balances will appear here.{' '}
-          </h1>
+          </p>
         )}
+
+        {isRegtest && !hasBalances && !isLoading && (
+          <button className="button is-link" onClick={this.callFaucet}>
+            <span role="img" aria-label="create">
+              🚰
+            </span>{' '}
+            Faucet
+          </button>
+        )}
+
+        {!hasBalances && !isLoading && (
+          <button className="button" onClick={this.getBalances}>
+            <span role="img" aria-label="create">
+              ♻
+            </span>{' '}
+            Reload
+          </button>
+        )}
+
         {isLoading && <Spinner />}
-        <br />
-        <p className="subtitle is-4">Transaction</p>
-        <button
-          className={`button is-large ${!isLoading && showCreate && `is-link`}`}
-          onClick={() =>
-            this.setState({
-              showCreate: true,
-              showImport: false,
-            })
-          }
-        >
-          <span role="img" aria-label="create">
-            🛠
-          </span>{' '}
-          Create
-        </button>
-        <button
-          className={`button is-large ${!isLoading && showImport && `is-link`}`}
-          onClick={() =>
-            this.setState({
-              showImport: true,
-              showCreate: false,
-            })
-          }
-        >
-          <span role="img" aria-label="import">
-            📀
-          </span>{' '}
-          Import
-        </button>
-        <br />
-        <br />
+
+        {hasBalances && (
+          <section className="section">
+            <p className="subtitle is-4">Transaction</p>
+            <button
+              className={`button is-large ${!isLoading &&
+                showCreate &&
+                `is-link`}`}
+              onClick={() =>
+                this.setState({
+                  showCreate: true,
+                  showImport: false,
+                })
+              }
+            >
+              <span role="img" aria-label="create">
+                🛠
+              </span>{' '}
+              Create
+            </button>
+            <button
+              className={`button is-large ${!isLoading &&
+                showImport &&
+                `is-link`}`}
+              onClick={() =>
+                this.setState({
+                  showImport: true,
+                  showCreate: false,
+                })
+              }
+            >
+              <span role="img" aria-label="import">
+                📀
+              </span>{' '}
+              Import
+            </button>
+          </section>
+        )}
         {!isLoading && showCreate && (
           <Create
             utxos={utxos}

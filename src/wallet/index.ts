@@ -142,6 +142,14 @@ export function fetchUtxos(address: string, url: string): Promise<any> {
   return fetch(`${url}/address/${address}/utxo`).then(r => r.json());
 }
 
+export function faucet(address: string, url: string): Promise<any> {
+  return fetch(`${url}/faucet`, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ address }),
+  });
+}
 export async function fetchBalances(
   address: string,
   url: string
