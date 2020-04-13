@@ -15,9 +15,9 @@
     "build": "tsdx build -i ./src/index.tsx",
     "test": "tsdx test --passWithNoTests",
     "lint": "tsdx lint",
-    "scss": "npx node-sass --output-style compressed -o src/css src/scss",
-    "serve": "npx parcel --no-cache --port 8080 src/index.html",
-    "bundle": "yarn scss && yarn build && npx parcel build --no-cache src/index.html --public-url /liquid.coach",
+    "scss": "npx node-sass --output-style compressed -o public/css public/scss",
+    "serve": "npx parcel --no-cache --port 8080 public/index.html",
+    "bundle": "yarn scss && yarn build && npx parcel build --no-cache public/index.html --public-url /liquid.coach",
     "deploy": "npx push-dir --dir=dist --branch=gh-pages"
   },
   "peerDependencies": {
