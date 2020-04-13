@@ -202,17 +202,6 @@ const Create: React.FunctionComponent<Props> = props => {
                 Add{' '}
               </button>
             </div>
-            <div className="control">
-              <label style={{ visibility: 'hidden' }} className="label">
-                <span role="img" aria-label="vulpem">
-                  🦊
-                </span>
-              </label>
-              <button type="submit" className="button is-link is-medium">
-                {' '}
-                Add{' '}
-              </button>
-            </div>
           </div>
         </form>
 
