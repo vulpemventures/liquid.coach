@@ -21,11 +21,7 @@ export const validate = (
     case 'amount':
       try {
         confidential.satoshiToConfidentialValue(Number(value));
-        console.log('is actually valid');
       } catch (ignore) {
-        console.log(value);
-        console.log(ignore);
-        console.log('is not valid');
         return false;
       }
       return true;

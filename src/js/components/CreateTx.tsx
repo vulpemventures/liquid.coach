@@ -2,21 +2,28 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import InputWithCopy from '../elements/InputWithCopy';
+
+import Wallet from '../wallet';
 import { validate, toHumanFriendlyString } from '../helpers';
+import { networks } from 'liquidjs-lib';
 
 interface Props {
+  identity: string;
+  network: string;
   utxos: Object;
   lbtc: string;
 }
 
 const Create: React.FunctionComponent<Props> = props => {
-  const { utxos: utxosByAsset, lbtc } = props;
+  const { utxos: utxosByAsset, lbtc, identity, network } = props;
+
+  const wallet = new Wallet(identity, (networks as any)[network]);
 
   const [inputAssetIndex, setInputAssetIndex] = useState(0);
   const [utxoIndex, setUtxoIndex] = useState(0);
   const [inputs, setInputs] = useState([]);
   const [outputs, setOutputs] = useState([]);
-  const [encoded, encodeTx] = useState(false);
+  const [encoded, setEncoded] = useState('');
 
   const assets: Array<string> = Object.keys(utxosByAsset);
   const utxos: Array<any> = (utxosByAsset as any)[assets[inputAssetIndex]];
@@ -63,6 +70,11 @@ const Create: React.FunctionComponent<Props> = props => {
         },
       ])
     );
+  };
+
+  const createTransaction = () => {
+    const psbt = wallet.createTx(inputs, outputs);
+    setEncoded(psbt);
   };
 
   return (
@@ -114,7 +126,7 @@ const Create: React.FunctionComponent<Props> = props => {
                 className="button is-medium is-fullwidth"
                 style={{ borderColor: 'transparent' }}
               >
-                {i.asset === lbtc ? 'L-BTC' : i.asset}
+                {i.asset === lbtc ? 'L-BTC' : toHumanFriendlyString(i.asset)}
               </button>
               <button
                 className="button is-medium is-fullwidth"
@@ -190,6 +202,17 @@ const Create: React.FunctionComponent<Props> = props => {
                 Add{' '}
               </button>
             </div>
+            <div className="control">
+              <label style={{ visibility: 'hidden' }} className="label">
+                <span role="img" aria-label="vulpem">
+                  🦊
+                </span>
+              </label>
+              <button type="submit" className="button is-link is-medium">
+                {' '}
+                Add{' '}
+              </button>
+            </div>
           </div>
         </form>
 
@@ -220,14 +243,17 @@ const Create: React.FunctionComponent<Props> = props => {
       </div>
 
       <div className="box is-centered">
-        <button className="button is-large" onClick={() => encodeTx(true)}>
-          Encode to PSBT format
+        <p className="subtitle"> Total inputs {inputs.length} </p>
+        <p className="subtitle"> Total outputs {outputs.length} </p>
+        <button className="button is-large" onClick={createTransaction}>
+          <span role="img" aria-label="encode psbt">
+            🚜
+          </span>
+          ‍Encode
         </button>
         <br />
         <br />
-        {encoded && (
-          <InputWithCopy value="eqfcjahdjcbwdjksbckjbdscjkbjkdscbkj" />
-        )}
+        {encoded.length > 0 && <InputWithCopy value={encoded} />}
       </div>
     </div>
   );
