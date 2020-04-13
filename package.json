@@ -17,8 +17,8 @@
     "lint": "tsdx lint",
     "scss": "npx node-sass --output-style compressed -o public/css public/scss",
     "serve": "npx parcel --no-cache --port 8080 public/index.html",
-    "bundle": "yarn scss && yarn build && npx parcel build --no-cache public/index.html --public-url /liquid.coach",
-    "deploy": "npx push-dir --dir=dist --branch=gh-pages"
+    "bundle": "yarn scss && yarn build && npx parcel build --no-cache public/index.html",
+    "deploy": "npx cpx CNAME dist && npx push-dir --dir=dist --branch=gh-pages"
   },
   "peerDependencies": {
     "react": ">=16"
@@ -50,6 +50,7 @@
     "bulma": "^0.8.2",
     "bulma-switch": "^2.0.0",
     "copy-lite": "^0.1.2",
+    "cpx": "^1.5.0",
     "husky": "^4.2.5",
     "liquidjs-lib": "vulpemventures/liquidjs-lib",
     "parcel-bundler": "^1.12.4",
