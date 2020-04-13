@@ -12,8 +12,7 @@ const fetch = window.fetch;
 
 export const EXPLORER_URL = {
   liquid: 'https://blockstream.info/liquid/api',
-  regtest: 'http://localhost:3001',
-  //regtest: 'https://nigiri.network/liquid/api',
+  regtest: 'https://nigiri.network/liquid/api',
 };
 
 interface UtxoInterface {
