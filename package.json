@@ -48,6 +48,7 @@
     "bip32": "^2.0.5",
     "bulma": "^0.8.2",
     "bulma-switch": "^2.0.0",
+    "copy-lite": "^0.1.2",
     "husky": "^4.2.5",
     "liquidjs-lib": "vulpemventures/liquidjs-lib",
     "parcel-bundler": "^1.12.4",

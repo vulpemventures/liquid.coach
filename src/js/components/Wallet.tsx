@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Create from './CreateTx';
+import Decode from './DecodeTx';
 
 import Balances from '../elements/Balances';
 import Spinner from '../elements/Spinner';
@@ -78,7 +79,7 @@ export default class Wallet extends React.Component<Props, State> {
         <br />
         <p className="subtitle is-4">Transaction</p>
         <button
-          className={`button is-large ${showCreate && `is-link`}`}
+          className={`button is-large ${!isLoading && showCreate && `is-link`}`}
           onClick={() =>
             this.setState({
               showCreate: true,
@@ -92,7 +93,7 @@ export default class Wallet extends React.Component<Props, State> {
           Create
         </button>
         <button
-          className={`button is-large ${showImport && `is-link`}`}
+          className={`button is-large ${!isLoading && showImport && `is-link`}`}
           onClick={() =>
             this.setState({
               showImport: true,
@@ -115,7 +116,14 @@ export default class Wallet extends React.Component<Props, State> {
             network={network}
           />
         )}
-        {showImport && <p className="subtitle">Coming soon</p>}
+        {!isLoading && showImport && (
+          <Decode
+            utxos={utxos}
+            lbtc={LBTC_ASSET_HASH}
+            identity={identity}
+            network={network}
+          />
+        )}
       </div>
     );
   }

@@ -24,3 +24,8 @@ export function fromSatoshi(x: number) {
 export function toSatoshi(x: number) {
   return Math.floor(x * Math.pow(10, 8));
 }
+
+export function toAssetHash(x: Buffer): string {
+  const withoutFirstByte = x.slice(1);
+  return withoutFirstByte.reverse().toString('hex');
+}

@@ -1,10 +1,19 @@
-import { Psbt, confidential, address, payments, Network } from 'liquidjs-lib';
+import {
+  Psbt,
+  confidential,
+  address,
+  payments,
+  Network,
+  Transaction,
+} from 'liquidjs-lib';
+import { toAssetHash } from '../helpers';
 
 const fetch = window.fetch;
 
 export const EXPLORER_URL = {
   liquid: 'https://blockstream.info/liquid/api',
-  regtest: 'https://nigiri.network/liquid/api',
+  regtest: 'http://localhost:3001',
+  //regtest: 'https://nigiri.network/liquid/api',
 };
 
 interface UtxoInterface {
@@ -17,6 +26,7 @@ interface UtxoInterface {
 export default class LiquidWallet {
   scriptPubKey: string;
   address: string;
+  network: Network;
 
   constructor(identity: string, network: Network) {
     try {
@@ -28,10 +38,73 @@ export default class LiquidWallet {
     const payment = payments.p2wpkh({ address: identity, network });
     this.scriptPubKey = payment.output!.toString('hex');
     this.address = payment.address!;
+    this.network = network;
   }
 
-  createTx(inputs: Array<any>, outputs: Array<any>): string {
-    let psbt = new Psbt();
+  static createTx(): string {
+    const psbt = new Psbt();
+    return psbt.toBase64();
+  }
+
+  decodeTx(psbtBase64: string): any {
+    let psbt: Psbt;
+    try {
+      psbt = Psbt.fromBase64(psbtBase64);
+    } catch (ignore) {
+      throw new Error('Invalid psbt');
+    }
+
+    const bufferTx: Buffer = psbt.data.globalMap.unsignedTx.toBuffer();
+    const transaction: Transaction = Transaction.fromBuffer(bufferTx);
+
+    let inputs: Array<any> = [],
+      outputs: Array<any> = [];
+
+    psbt.data.inputs.forEach((i, index) => {
+      const txid = transaction.ins[index].hash.reverse().toString('hex');
+      const vout = transaction.ins[index].index;
+      const value = confidential.confidentialValueToSatoshi(
+        i.witnessUtxo?.value!
+      );
+      const asset = toAssetHash(i.witnessUtxo?.asset!);
+
+      inputs.push({
+        txid,
+        vout,
+        value,
+        asset,
+      });
+    });
+
+    transaction.outs.forEach(o => {
+      const asset = toAssetHash(o.asset);
+      const value = confidential.confidentialValueToSatoshi(o.value);
+      const addr = address.fromOutputScript(o.script, this.network);
+
+      outputs.push({
+        asset,
+        value,
+        address: addr,
+      });
+    });
+
+    return {
+      inputs,
+      outputs,
+    };
+  }
+
+  updateTx(
+    psbtBase64: string,
+    inputs: Array<any>,
+    outputs: Array<any>
+  ): string {
+    let psbt: Psbt;
+    try {
+      psbt = Psbt.fromBase64(psbtBase64);
+    } catch (ignore) {
+      throw new Error('Invalid psbt');
+    }
 
     inputs.forEach((i: UtxoInterface) =>
       psbt.addInput({
@@ -49,17 +122,18 @@ export default class LiquidWallet {
       } as any)
     );
 
-    outputs.forEach(o =>
+    outputs.forEach(o => {
+      const script = address.toOutputScript(o.address, this.network);
       psbt.addOutput({
-        script: Buffer.from(this.scriptPubKey, 'hex'),
+        script: script,
         asset: Buffer.concat([
           Buffer.from('01', 'hex'), //prefix for unconfidential asset
           Buffer.from(o.asset, 'hex').reverse(),
         ]),
         value: confidential.satoshiToConfidentialValue(Number(o.value)),
         nonce: Buffer.from('00', 'hex'),
-      } as any)
-    );
+      } as any);
+    });
 
     return psbt.toBase64();
   }
