@@ -78,7 +78,10 @@ export default class LiquidWallet {
     transaction.outs.forEach(o => {
       const asset = toAssetHash(o.asset);
       const value = confidential.confidentialValueToSatoshi(o.value);
-      const addr = address.fromOutputScript(o.script, this.network);
+
+      const addr = o.script.equals(Buffer.alloc(0))
+        ? 'LBTC_FEES'
+        : address.fromOutputScript(o.script, this.network);
 
       outputs.push({
         asset,

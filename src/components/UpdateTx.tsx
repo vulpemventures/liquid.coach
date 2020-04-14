@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import TextWithCopy from '../elements/TextWithCopy';
 import { validate, toHumanFriendlyString } from '../helpers';
 
 interface Props {
@@ -117,13 +118,21 @@ const Update: React.FunctionComponent<Props> = props => {
                 className="button is-medium is-fullwidth"
                 style={{ borderColor: 'transparent' }}
               >
-                {i.asset === lbtc ? 'L-BTC' : toHumanFriendlyString(i.asset)}
+                <TextWithCopy
+                  label={
+                    i.asset === lbtc ? 'L-BTC' : toHumanFriendlyString(i.asset)
+                  }
+                  value={i.asset}
+                />
               </button>
               <button
                 className="button is-medium is-fullwidth"
                 style={{ borderColor: 'transparent' }}
               >
-                {toHumanFriendlyString(i.txid) + ' ' + i.value}
+                <TextWithCopy
+                  label={toHumanFriendlyString(i.txid) + ' ' + i.value}
+                  value={i.txid}
+                />
               </button>
             </div>
           ))}
@@ -203,19 +212,25 @@ const Update: React.FunctionComponent<Props> = props => {
                 className="button is-medium is-fullwidth"
                 style={{ borderColor: 'transparent' }}
               >
-                {toHumanFriendlyString(o.asset)}
+                <TextWithCopy
+                  label={toHumanFriendlyString(o.asset)}
+                  value={o.asset}
+                />
               </button>
               <button
                 className="button is-medium is-fullwidth"
                 style={{ borderColor: 'transparent' }}
               >
-                {toHumanFriendlyString(o.address)}
+                <TextWithCopy
+                  label={toHumanFriendlyString(o.address)}
+                  value={o.address}
+                />
               </button>
               <button
                 className="button is-medium is-fullwidth"
                 style={{ borderColor: 'transparent' }}
               >
-                {o.value}
+                <TextWithCopy label={o.value} value={o.value} />
               </button>
             </div>
           ))}
