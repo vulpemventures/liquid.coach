@@ -20,6 +20,7 @@ interface UtxoInterface {
   vout: number;
   asset: string;
   value: number;
+  script?: string;
 }
 
 export default class LiquidWallet {
@@ -62,6 +63,7 @@ export default class LiquidWallet {
     psbt.data.inputs.forEach((i, index) => {
       const txid = transaction.ins[index].hash.reverse().toString('hex');
       const vout = transaction.ins[index].index;
+      const script = i.witnessUtxo!.script.toString('hex');
       const value = confidential.confidentialValueToSatoshi(
         i.witnessUtxo?.value!
       );
@@ -72,6 +74,7 @@ export default class LiquidWallet {
         vout,
         value,
         asset,
+        script,
       });
     });
 
@@ -113,7 +116,9 @@ export default class LiquidWallet {
         hash: i.txid,
         index: i.vout,
         witnessUtxo: {
-          script: Buffer.from(this.scriptPubKey, 'hex'),
+          script: i.script
+            ? Buffer.from(i.script, 'hex')
+            : Buffer.from(this.scriptPubKey, 'hex'),
           asset: Buffer.concat([
             Buffer.from('01', 'hex'), //prefix for unconfidential asset
             Buffer.from(i.asset, 'hex').reverse(),
