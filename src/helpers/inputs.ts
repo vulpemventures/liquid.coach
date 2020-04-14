@@ -13,7 +13,7 @@ export const validate = (
       return true;
     case 'address':
       try {
-        address.toOutputScript(value, network);
+        if (value !== 'LBTC_FEES') address.toOutputScript(value, network);
       } catch (ignore) {
         return false;
       }

@@ -125,7 +125,11 @@ export default class LiquidWallet {
     );
 
     outputs.forEach(o => {
-      const script = address.toOutputScript(o.address, this.network);
+      const script =
+        o.address === 'LBTC_FEES'
+          ? Buffer.alloc(0)
+          : address.toOutputScript(o.address, this.network);
+
       psbt.addOutput({
         script: script,
         asset: Buffer.concat([
