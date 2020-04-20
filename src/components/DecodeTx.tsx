@@ -96,6 +96,7 @@ const Decode: React.FunctionComponent<Props> = props => {
 
       {state.hasBeenDecoded && (
         <Update
+          network={network}
           lbtc={lbtc}
           utxos={utxos}
           inputs={state.inputs}

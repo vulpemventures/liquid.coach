@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import TextWithCopy from '../elements/TextWithCopy';
 import { validate, toHumanFriendlyString } from '../helpers';
+import { networks } from 'liquidjs-lib';
 
 interface Props {
+  network: string;
   utxos: Object;
   lbtc: string;
   inputs: Array<any>;
@@ -14,7 +16,7 @@ interface Props {
 }
 
 const Update: React.FunctionComponent<Props> = props => {
-  const { utxos: utxosByAsset, lbtc, showSign } = props;
+  const { utxos: utxosByAsset, lbtc, showSign, network } = props;
 
   const [inputAssetIndex, setInputAssetIndex] = useState(0);
   const [utxoIndex, setUtxoIndex] = useState(0);
@@ -50,7 +52,7 @@ const Update: React.FunctionComponent<Props> = props => {
       return;
     }
 
-    if (!validate(address, 'address')) {
+    if (!validate(address, 'address', (networks as any)[network])) {
       setError('address' as any);
       return;
     }

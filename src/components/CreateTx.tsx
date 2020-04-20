@@ -29,6 +29,7 @@ const Create: React.FunctionComponent<Props> = props => {
   return (
     <div>
       <Update
+        network={network}
         lbtc={lbtc}
         utxos={utxos}
         inputs={[]}
