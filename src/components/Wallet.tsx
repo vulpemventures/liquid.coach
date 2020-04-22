@@ -6,7 +6,7 @@ import Decode from './DecodeTx';
 import Balances from '../elements/Balances';
 import Spinner from '../elements/Spinner';
 
-import { fetchBalances, faucet, EXPLORER_URL } from '../wallet';
+import { fetchBalances, faucet, EXPLORER_URL, mint } from '../wallet';
 import { networks } from 'liquidjs-lib';
 
 interface Props {
@@ -76,6 +76,28 @@ export default class Wallet extends React.Component<Props, State> {
       });
   };
 
+  callMint = () => {
+    this.setState({ isLoading: true });
+
+    const qtyString = prompt('How many asset you want to issue?');
+
+    if (!qtyString || isNaN(Number(qtyString))) {
+      alert('You need to pass a valid amount');
+      this.setState({ isLoading: false });
+      return;
+    }
+
+    mint(this.props.identity, Number(qtyString), EXPLORER_URL.regtest)
+      .then(() => {
+        return this.getBalances();
+      })
+      .catch(e => {
+        console.error(e);
+        alert('Something went wrong. Explorer may be down');
+        this.setState({ isLoading: false });
+      });
+  };
+
   render() {
     const { network, identity } = this.props;
     const {
@@ -119,6 +141,15 @@ export default class Wallet extends React.Component<Props, State> {
               ♻
             </span>{' '}
             Reload
+          </button>
+        )}
+
+        {isRegtest && !isLoading && (
+          <button className="button is-link" onClick={this.callMint}>
+            <span role="img" aria-label="create">
+              💸
+            </span>{' '}
+            Mint
           </button>
         )}
 

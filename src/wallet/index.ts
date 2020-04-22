@@ -162,6 +162,19 @@ export function faucet(address: string, url: string): Promise<any> {
     body: JSON.stringify({ address }),
   });
 }
+
+export function mint(
+  address: string,
+  quantity: number,
+  url: string
+): Promise<any> {
+  return fetch(`${url}/mint`, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ address, quantity }),
+  });
+}
 export async function fetchBalances(
   address: string,
   url: string
