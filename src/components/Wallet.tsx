@@ -135,21 +135,21 @@ export default class Wallet extends React.Component<Props, State> {
           </button>
         )}
 
-        {!hasBalances && !isLoading && (
-          <button className="button" onClick={this.getBalances}>
-            <span role="img" aria-label="create">
-              ♻
-            </span>{' '}
-            Reload
-          </button>
-        )}
-
         {isRegtest && !isLoading && (
           <button className="button is-link" onClick={this.callMint}>
             <span role="img" aria-label="create">
               💸
             </span>{' '}
             Mint
+          </button>
+        )}
+
+        {!hasBalances && !isLoading && (
+          <button className="button" onClick={this.getBalances}>
+            <span role="img" aria-label="create">
+              ♻
+            </span>{' '}
+            Reload
           </button>
         )}
 
