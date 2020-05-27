@@ -21,7 +21,10 @@ const Circle: React.FunctionComponent<Props> = props => {
           <p className="subtitle is-5 has-text-white"> {props.asset}</p>
           <h1 className="title is-2 has-text-white">
             {' '}
-            {props.balance.toLocaleString()}{' '}
+            {props.balance.toLocaleString('en-US', {
+              minimumFractionDigits: 0,  
+              maximumFractionDigits: 8,
+            })}{' '}
           </h1>
         </div>
       </div>
