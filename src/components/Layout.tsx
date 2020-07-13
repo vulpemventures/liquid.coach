@@ -3,13 +3,39 @@ import React from 'react';
 interface Props {
   title?: string;
   onClean?(): void;
+  onExplorer?(explorer: string): void;
+  showExplorer: boolean;
 }
 
 class Layout extends React.Component<Props> {
+
+  changeUrl() {
+    const errorMsg = "Not valid endpoint";
+    let url = prompt("Custom Electrs REST endpoint to use");
+    try {
+      if (!url || typeof url != 'string' || url.length <= 0) {
+        throw undefined;
+      }
+      new URL(url!);
+      if (url.includes('localhost'))
+        url = `http://${url}`;
+      this.props.onExplorer!(url!);
+    } catch (ignore) {
+      alert(errorMsg);
+    }
+
+  }
+
   render() {
     const withCleanButton = this.props.onClean ? (
       <span className="button is-pulled-right" onClick={this.props.onClean}>
-        Clean
+        Reset
+      </span>
+    ) : null;
+
+    const withExplorer = this.props.showExplorer ? (
+      <span className="button is-pulled-right" onClick={() => this.changeUrl()}>
+        Custom explorer
       </span>
     ) : null;
 
@@ -17,10 +43,15 @@ class Layout extends React.Component<Props> {
       <section className="hero is-light">
         <div className="hero-body">
           <div className="container">
-            {withCleanButton}
             <div className="columns">
-              <div className="column has-text-centered">
+              <div className="column is-8 is-offset-2 has-text-centered">
                 <h1 className="title">{this.props.title}</h1>
+              </div>
+              <div className="column has-text-centered">
+                {withExplorer}
+              </div>
+              <div className="column has-text-centered">
+                {withCleanButton}
               </div>
             </div>
           </div>

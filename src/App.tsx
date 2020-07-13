@@ -4,7 +4,7 @@ import Load from './components/Load';
 import Wallet from './components/Wallet';
 import useGlobalStorage from 'use-global-storage';
 
-interface Props {}
+interface Props { }
 
 const App: React.FunctionComponent<Props> = () => {
   const useStorage = useGlobalStorage({
@@ -17,6 +17,12 @@ const App: React.FunctionComponent<Props> = () => {
     <div>
       <Layout
         title="🏋️‍♂️ Liquid.Coach"
+        showExplorer={!state}
+        onExplorer={(explorer: string) => {
+          setState({
+            explorerUrl: explorer
+          });
+        }}
         onClean={() => {
           setState(null);
         }}
@@ -24,18 +30,20 @@ const App: React.FunctionComponent<Props> = () => {
         <div className="container">
           <div className="container">
             <div className="columns">
-              {!state ? (
+              {!state || !state.loaded ? (
                 <Load
                   onLoad={(xpubOrAddress: string, selectedNetwork: any) => {
                     setState({
+                      loaded: true,
                       identity: xpubOrAddress,
                       network: selectedNetwork,
+                      ...state
                     });
                   }}
                 />
               ) : (
-                <Wallet identity={state.identity} network={state.network} />
-              )}
+                  <Wallet identity={state.identity} network={state.network} explorerUrl={state.explorerUrl} />
+                )}
             </div>
           </div>
         </div>

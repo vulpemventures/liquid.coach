@@ -12,6 +12,7 @@ import { networks } from 'liquidjs-lib';
 interface Props {
   identity: string;
   network: string;
+  explorerUrl?: string;
 }
 
 interface State {
@@ -40,9 +41,9 @@ export default class Wallet extends React.Component<Props, State> {
   getBalances = () => {
     this.setState({ isLoading: true });
 
-    const { identity, network } = this.props;
+    const { identity, network, explorerUrl } = this.props;
 
-    fetchBalances(identity, (EXPLORER_URL as any)[network])
+    fetchBalances(identity, explorerUrl || (EXPLORER_URL as any)[network])
       .then((data: any) => {
         if (Object.keys(data.utxos).length > 0)
           this.setState({
@@ -65,7 +66,7 @@ export default class Wallet extends React.Component<Props, State> {
   callFaucet = () => {
     this.setState({ isLoading: true });
 
-    faucet(this.props.identity, EXPLORER_URL.regtest)
+    faucet(this.props.identity, this.props.explorerUrl || EXPLORER_URL.regtest)
       .then(() => {
         return this.getBalances();
       })
@@ -87,7 +88,7 @@ export default class Wallet extends React.Component<Props, State> {
       return;
     }
 
-    mint(this.props.identity, Number(qtyString), EXPLORER_URL.regtest)
+    mint(this.props.identity, Number(qtyString), this.props.explorerUrl || EXPLORER_URL.regtest)
       .then(() => {
         return this.getBalances();
       })
