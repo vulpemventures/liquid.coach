@@ -4,7 +4,7 @@ import Load from './components/Load';
 import Wallet from './components/Wallet';
 import useGlobalStorage from 'use-global-storage';
 
-interface Props { }
+interface Props {}
 
 const App: React.FunctionComponent<Props> = () => {
   const useStorage = useGlobalStorage({
@@ -20,7 +20,7 @@ const App: React.FunctionComponent<Props> = () => {
         showExplorer={!state}
         onExplorer={(explorer: string) => {
           setState({
-            explorerUrl: explorer
+            explorerUrl: explorer,
           });
         }}
         onClean={() => {
@@ -37,13 +37,17 @@ const App: React.FunctionComponent<Props> = () => {
                       loaded: true,
                       identity: xpubOrAddress,
                       network: selectedNetwork,
-                      ...state
+                      ...state,
                     });
                   }}
                 />
               ) : (
-                  <Wallet identity={state.identity} network={state.network} explorerUrl={state.explorerUrl} />
-                )}
+                <Wallet
+                  identity={state.identity}
+                  network={state.network}
+                  explorerUrl={state.explorerUrl}
+                />
+              )}
             </div>
           </div>
         </div>

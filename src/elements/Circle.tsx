@@ -22,7 +22,7 @@ const Circle: React.FunctionComponent<Props> = props => {
           <h1 className="title is-2 has-text-white">
             {' '}
             {props.balance.toLocaleString('en-US', {
-              minimumFractionDigits: 0,  
+              minimumFractionDigits: 0,
               maximumFractionDigits: 8,
             })}{' '}
           </h1>

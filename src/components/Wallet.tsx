@@ -88,7 +88,11 @@ export default class Wallet extends React.Component<Props, State> {
       return;
     }
 
-    mint(this.props.identity, Number(qtyString), this.props.explorerUrl || EXPLORER_URL.regtest)
+    mint(
+      this.props.identity,
+      Number(qtyString),
+      this.props.explorerUrl || EXPLORER_URL.regtest
+    )
       .then(() => {
         return this.getBalances();
       })
