@@ -73,6 +73,11 @@ const Update: React.FunctionComponent<Props> = props => {
     );
   };
 
+  const removeInput = (index: number) =>
+    setInputs(inputs.filter((_o: any, i: number) => i !== index));
+  const removeOutput = (index: number) =>
+    setOutputs(outputs.filter((_o: any, i: number) => i !== index));
+
   return (
     <div>
       <div className="box">
@@ -137,6 +142,12 @@ const Update: React.FunctionComponent<Props> = props => {
                   label={toHumanFriendlyString(i.txid) + ' ' + i.value}
                   value={i.txid}
                 />
+              </button>
+              <button
+                className="button is-danger"
+                onClick={() => removeInput(index)}
+              >
+                Delete
               </button>
             </div>
           ))}
@@ -210,6 +221,7 @@ const Update: React.FunctionComponent<Props> = props => {
         </form>
 
         <span>
+          <br />
           {outputs.map((o: any, index: number) => (
             <div key={index} className="field has-addons">
               <button
@@ -235,6 +247,12 @@ const Update: React.FunctionComponent<Props> = props => {
                 style={{ borderColor: 'transparent' }}
               >
                 <TextWithCopy label={o.value} value={o.value} />
+              </button>
+              <button
+                className="button is-danger"
+                onClick={() => removeOutput(index)}
+              >
+                Delete
               </button>
             </div>
           ))}

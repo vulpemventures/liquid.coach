@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import App from '../src/js/App';
+import App from '../src/App';
 
 describe('it', () => {
   it('renders without crashing', () => {

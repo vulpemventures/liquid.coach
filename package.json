@@ -52,6 +52,7 @@
     "copy-lite": "^0.1.2",
     "cpx": "^1.5.0",
     "husky": "^4.2.5",
+    "liquidjs-lib": "provable-things/liquidjs-lib",
     "parcel-bundler": "^1.12.4",
     "push-dir": "^0.4.1",
     "react": "^16.13.1",
@@ -63,7 +64,5 @@
     "typescript": "^3.8.3",
     "use-global-storage": "^0.1.0"
   },
-  "dependencies": {
-    "liquidjs-lib": "provable-things/liquidjs-lib"
-  }
+  "dependencies": {}
 }
