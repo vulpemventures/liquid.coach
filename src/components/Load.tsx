@@ -41,7 +41,7 @@ const Load: React.FunctionComponent<Props> = props => {
     const seed = bip39.mnemonicToSeedSync(mnemonic);
     const root = bip32.fromSeed(seed, currentNetwork);
     const xpub = root.toBase58();
-    const vpub = changeVersionBytes(xpub, 'vpub');
+    const zpub = changeVersionBytes(xpub, 'zpub');
 
     return (
       <div className="modal is-active">
@@ -57,13 +57,13 @@ const Load: React.FunctionComponent<Props> = props => {
             </p>
             <InputWithCopy value={mnemonic} bgColor="is-info is-light" />
             <label className="label">Extended public key</label>
-            <InputWithCopy value={vpub} bgColor="is-info is-light" />
+            <InputWithCopy value={zpub} bgColor="is-info is-light" />
           </section>
           <footer className="modal-card-foot">
             <button
               className="button is-primary"
               onClick={() => {
-                const node = root.derivePath("m/84'/1'/0'/0");
+                const node = root.derivePath("m/84'/0'/0'/0");
                 const wpkh = payments.p2wpkh({
                   pubkey: node.publicKey,
                   network: currentNetwork,
@@ -107,18 +107,16 @@ const Load: React.FunctionComponent<Props> = props => {
       </button>
       <br />
       <br />
-      {!isLiquid && (
-        <div>
-          <p className="subtitle">or create a new one...</p>
-          <button
-            className="button is-primary is-large"
-            onClick={() => setShowConfirm(true)}
-          >
-            Generate
-          </button>
-          {showConfirm && confirmModal()}
-        </div>
-      )}
+      <div>
+        <p className="subtitle">or create a new one...</p>
+        <button
+          className="button is-primary is-large"
+          onClick={() => setShowConfirm(true)}
+        >
+          Generate
+        </button>
+        {showConfirm && confirmModal()}
+      </div>
     </div>
   );
 };

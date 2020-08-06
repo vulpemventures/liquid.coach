@@ -11,12 +11,11 @@ interface Props {
   inputs: Array<any>;
   outputs: Array<any>;
   onEncode(inputs: Array<any>, outputs: Array<any>): void;
-  showSign?: Boolean;
   onSign?(): void;
 }
 
 const Update: React.FunctionComponent<Props> = props => {
-  const { utxos: utxosByAsset, lbtc, showSign, network } = props;
+  const { utxos: utxosByAsset, lbtc, network } = props;
 
   const [inputAssetIndex, setInputAssetIndex] = useState(0);
   const [utxoIndex, setUtxoIndex] = useState(0);
@@ -271,14 +270,12 @@ const Update: React.FunctionComponent<Props> = props => {
           </span>
           ‍Encode
         </button>
-        {showSign && (
-          <button className="button is-large" onClick={props.onSign!}>
-            <span role="img" aria-label="sign psbt">
-              ✍
-            </span>
-            Sign
-          </button>
-        )}
+        <button className="button is-large" onClick={props.onSign!}>
+          <span role="img" aria-label="sign psbt">
+            ✍
+          </span>
+          Sign
+        </button>
       </div>
     </div>
   );

@@ -19,7 +19,6 @@ const Decode: React.FunctionComponent<Props> = props => {
 
   const currentNetwork = (networks as any)[network];
   const wallet = new Wallet(identity, currentNetwork);
-  const isRegtest = network === 'regtest';
 
   const [state, setState] = useState({
     hasBeenDecoded: false,
@@ -54,7 +53,7 @@ const Decode: React.FunctionComponent<Props> = props => {
     try {
       const seed = bip39.mnemonicToSeedSync(mnemonic!);
       const root = bip32.fromSeed(seed, currentNetwork);
-      const node = root.derivePath("m/84'/1'/0'/0");
+      const node = root.derivePath("m/84'/0'/0'/0");
       const keyPair = ECPair.fromWIF(node.toWIF(), currentNetwork);
       const wpkh = payments.p2wpkh({
         pubkey: keyPair.publicKey,
@@ -102,7 +101,6 @@ const Decode: React.FunctionComponent<Props> = props => {
           inputs={state.inputs}
           outputs={state.outputs}
           onEncode={onEncode}
-          showSign={isRegtest}
           onSign={onSign}
         />
       )}
