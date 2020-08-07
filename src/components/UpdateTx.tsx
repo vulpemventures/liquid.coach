@@ -77,6 +77,21 @@ const Update: React.FunctionComponent<Props> = props => {
   const removeOutput = (index: number) =>
     setOutputs(outputs.filter((_o: any, i: number) => i !== index));
 
+  const addFeeOutput = () => {
+    const amount = prompt('Enter the amount in satoshis to cover fees');
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0)
+      return alert('Not a valid number');
+    setOutputs((os: any) =>
+      os.concat([
+        {
+          value: amount,
+          address: 'LBTC_FEES',
+          asset: lbtc,
+        },
+      ])
+    );
+  };
+
   return (
     <div>
       <div className="box">
@@ -154,7 +169,17 @@ const Update: React.FunctionComponent<Props> = props => {
       </div>
 
       <div className="box">
-        <h1 className="title">Outputs</h1>
+        <div className="columns">
+          <div className="column is-6 is-offset-3">
+            <h1 className="title">Outputs</h1>
+          </div>
+          <div className="column is-3">
+            <button className="button is-pulled-right" onClick={addFeeOutput}>
+              Add Fee output
+            </button>
+          </div>
+        </div>
+
         <form
           className="form"
           onSubmit={handleSubmit((data: any) => addOutput(data))}
