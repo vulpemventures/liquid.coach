@@ -1,7 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { networks, ECPair, Psbt, payments } from 'liquidjs-lib';
-import * as bip39 from 'bip39';
-import * as bip32 from 'bip32';
+import { networks } from 'liquidjs-lib';
 
 import Update from './UpdateTx';
 import Wallet from '../wallet';
@@ -47,35 +45,17 @@ const Decode: React.FunctionComponent<Props> = props => {
   };
 
   const onSign = () => {
+    if (encoded.length === 0)
+      return alert('Encode the transaction on every change before signing');
+
     const mnemonic = prompt("What's your mnemonic?");
-    if (!bip39.validateMnemonic(mnemonic!)) return alert('Mnemonic not valid');
+    if (!Wallet.isValidMnemonic(mnemonic!)) return alert('Mnemonic not valid');
 
     try {
-      const seed = bip39.mnemonicToSeedSync(mnemonic!);
-      const root = bip32.fromSeed(seed, currentNetwork);
-      const node = root.derivePath("m/84'/0'/0'/0");
-      const keyPair = ECPair.fromWIF(node.toWIF(), currentNetwork);
-      const wpkh = payments.p2wpkh({
-        pubkey: keyPair.publicKey,
-        network: currentNetwork,
-      });
-
-      const decoded = Psbt.fromBase64((psbtInput.current! as any).value);
-      const inputIndex = decoded.data.inputs.findIndex(
-        p =>
-          p.witnessUtxo!.script.toString('hex') === wpkh.output!.toString('hex')
-      );
-      decoded.signInput(inputIndex, keyPair);
-      decoded.validateSignaturesOfInput(inputIndex);
-
-      //Let's finalize all inputs
-      decoded.validateSignaturesOfAllInputs();
-      decoded.finalizeAllInputs();
-
-      const hex = decoded.extractTransaction().toHex();
+      const hex = wallet.signPsbtWithMnemonic(encoded, mnemonic!);
       setEncoded(hex);
     } catch (ignore) {
-      return alert('Invalid transaction');
+      return alert(ignore);
     }
   };
 

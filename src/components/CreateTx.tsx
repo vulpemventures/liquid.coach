@@ -26,6 +26,21 @@ const Create: React.FunctionComponent<Props> = props => {
     setEncoded(psbt);
   };
 
+  const onSign = () => {
+    if (encoded.length === 0)
+      return alert('Encode the transaction on every change before signing');
+
+    const mnemonic = prompt("What's your mnemonic?");
+    if (!Wallet.isValidMnemonic(mnemonic!)) return alert('Mnemonic not valid');
+
+    try {
+      const hex = wallet.signPsbtWithMnemonic(encoded, mnemonic!);
+      setEncoded(hex);
+    } catch (ignore) {
+      return alert(ignore);
+    }
+  };
+
   return (
     <div>
       <Update
@@ -35,6 +50,7 @@ const Create: React.FunctionComponent<Props> = props => {
         inputs={[]}
         outputs={[]}
         onEncode={onEncode}
+        onSign={onSign}
       />
       {encoded.length > 0 && (
         <div className="box">

@@ -1,4 +1,5 @@
 import {
+  ECPair,
   Psbt,
   confidential,
   address,
@@ -6,6 +7,8 @@ import {
   Network,
   Transaction,
 } from 'liquidjs-lib';
+import * as bip39 from 'bip39';
+import * as bip32 from 'bip32';
 import { toAssetHash } from '../helpers';
 
 const fetch = window.fetch;
@@ -44,6 +47,10 @@ export default class LiquidWallet {
   static createTx(): string {
     const psbt = new Psbt();
     return psbt.toBase64();
+  }
+
+  static isValidMnemonic(m: string): boolean {
+    return bip39.validateMnemonic(m);
   }
 
   decodeTx(psbtBase64: string): any {
@@ -147,6 +154,32 @@ export default class LiquidWallet {
     });
 
     return psbt.toBase64();
+  }
+
+  signPsbtWithMnemonic(psbtBase64: string, mnemonic: string) {
+    const seed = bip39.mnemonicToSeedSync(mnemonic!);
+    const root = bip32.fromSeed(seed, this.network);
+    const node = root.derivePath("m/84'/0'/0'/0");
+    const keyPair = ECPair.fromWIF(node.toWIF(), this.network);
+    const wpkh = payments.p2wpkh({
+      pubkey: keyPair.publicKey,
+      network: this.network,
+    });
+
+    const decoded = Psbt.fromBase64(psbtBase64);
+    const inputIndex = decoded.data.inputs.findIndex(
+      p =>
+        p.witnessUtxo!.script.toString('hex') === wpkh.output!.toString('hex')
+    );
+    decoded.signInput(inputIndex, keyPair);
+    decoded.validateSignaturesOfInput(inputIndex);
+
+    //Let's finalize all inputs
+    decoded.validateSignaturesOfAllInputs();
+    decoded.finalizeAllInputs();
+
+    const hex = decoded.extractTransaction().toHex();
+    return hex;
   }
 }
 
