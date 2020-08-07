@@ -29,7 +29,7 @@ const Load: React.FunctionComponent<Props> = props => {
       !isValidXpub(pub, currentNetwork) &&
       !isValidAddress(pub, currentNetwork)
     )
-      return alert('Xpub or Segwit Address is not valid');
+      return alert('Given address is not a valid bech32 segwit address');
 
     props.onLoad(pub, networkString);
   };
@@ -98,7 +98,7 @@ const Load: React.FunctionComponent<Props> = props => {
         type="text"
         ref={pubkey}
         className="input is-medium"
-        placeholder="Your Segwit address here..."
+        placeholder="Your BECH32 segwit address here..."
       />
       <br />
       <br />
