@@ -210,9 +210,12 @@ export function mint(
 }
 export async function fetchBalances(
   address: string,
-  url: string
+  url: string,
+  blindingKey?: string
 ): Promise<any> {
-  const fetchedData = await fetchUtxos(address, url);
+  const fetchedData = (await fetchUtxos(address, url)).map((utxo: any) => {
+    return utxo;
+  });
   const balances = fetchedData.reduce(
     (storage: { [x: string]: any }, item: { [x: string]: any; value: any }) => {
       // get the first instance of the key by which we're grouping
