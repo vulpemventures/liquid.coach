@@ -13,6 +13,7 @@ interface Props {
   identity: string;
   network: string;
   explorerUrl?: string;
+  blindingKey?: string;
 }
 
 interface State {
@@ -41,9 +42,13 @@ export default class Wallet extends React.Component<Props, State> {
   getBalances = () => {
     this.setState({ isLoading: true });
 
-    const { identity, network, explorerUrl } = this.props;
+    const { identity, network, explorerUrl, blindingKey } = this.props;
 
-    fetchBalances(identity, explorerUrl || (EXPLORER_URL as any)[network])
+    fetchBalances(
+      identity,
+      explorerUrl || (EXPLORER_URL as any)[network],
+      blindingKey
+    )
       .then((data: any) => {
         if (Object.keys(data.utxos).length > 0)
           this.setState({

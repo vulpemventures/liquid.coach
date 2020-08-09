@@ -1,24 +1,42 @@
 import React, { useState, useRef } from 'react';
 
-import { networks, Network, payments } from 'liquidjs-lib';
+import { networks, Network, payments, address, ECPair } from 'liquidjs-lib';
 import * as bip39 from 'bip39';
 import * as bip32 from 'bip32';
 
 import InputWithCopy from '../elements/InputWithCopy';
-import { isValidXpub, isValidAddress, changeVersionBytes } from '../helpers';
+import {
+  isValidXpub,
+  isValidAddress,
+  isValidBlindingKey,
+  changeVersionBytes,
+} from '../helpers';
 
 interface Props {
-  onLoad(identity: string, network: string): void;
+  onLoad(identity: string, network: string, blindingPrivKey?: string): void;
 }
 
 const Load: React.FunctionComponent<Props> = props => {
   const [isLiquid, setIsLiquid] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showBlinding, setShowBlinding] = useState(false);
+  const [blindingPubkey, setBlindingPubkey] = useState('');
 
   const pubkey = useRef(null);
+  const blindingPrivKey = useRef(null);
 
   const networkString: string = isLiquid ? 'liquid' : 'regtest';
   const currentNetwork: Network = (networks as any)[networkString];
+
+  const onAddressInputChange = (value: string) => {
+    try {
+      const { blindingKey } = address.fromConfidential(value);
+      setShowBlinding(true);
+      setBlindingPubkey(blindingKey.toString('hex'));
+    } catch (ignore) {
+      setShowBlinding(false);
+    }
+  };
 
   const checkInput = () => {
     if (!pubkey || !pubkey.current)
@@ -29,7 +47,24 @@ const Load: React.FunctionComponent<Props> = props => {
       !isValidXpub(pub, currentNetwork) &&
       !isValidAddress(pub, currentNetwork)
     )
-      return alert('Given address is not a valid bech32 segwit address');
+      return alert('Given address is not a valid segwit address');
+
+    if (showBlinding) {
+      if (!blindingPrivKey || !blindingPrivKey.current)
+        return alert('Missing blinding key');
+
+      const blinding: any = (blindingPrivKey.current as any).value;
+      if (!isValidBlindingKey(blinding))
+        return alert('Given blinding key is not valid');
+
+      const blindKeyPair = ECPair.fromPrivateKey(Buffer.from(blinding, 'hex'));
+      if (blindKeyPair.publicKey.toString('hex') !== blindingPubkey)
+        return alert(
+          'Given blinding private key do not corresponds to the given address'
+        );
+
+      return props.onLoad(pub, networkString, blinding);
+    }
 
     props.onLoad(pub, networkString);
   };
@@ -97,9 +132,18 @@ const Load: React.FunctionComponent<Props> = props => {
       <input
         type="text"
         ref={pubkey}
-        className="input is-medium"
-        placeholder="Your BECH32 segwit address here..."
+        className="input is-medium mb-6"
+        onChange={(e: any) => onAddressInputChange(e.target.value)}
+        placeholder="Your segwit address here..."
       />
+      {showBlinding && (
+        <input
+          type="text"
+          ref={blindingPrivKey}
+          className="input is-medium mb-6"
+          placeholder="Your private blinding key here..."
+        />
+      )}
       <br />
       <br />
       <button className="button is-link is-large" onClick={checkInput}>
