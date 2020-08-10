@@ -9,8 +9,7 @@ import {
 } from 'liquidjs-lib';
 import * as bip39 from 'bip39';
 import * as bip32 from 'bip32';
-import { toAssetHash } from '../helpers';
-
+import { toAssetHash, isValidBlindingKey } from '../helpers';
 const fetch = window.fetch;
 
 export const EXPLORER_URL = {
@@ -28,20 +27,25 @@ interface UtxoInterface {
 
 export default class LiquidWallet {
   scriptPubKey: string;
+  blindingKey?: string;
   address: string;
   network: Network;
 
-  constructor(identity: string, network: Network) {
+  constructor(identity: string, network: Network, blindingKey?: string) {
     try {
       address.toOutputScript(identity, network);
+      if (blindingKey && !isValidBlindingKey)
+        throw new Error("Invalid blinding key");
     } catch (ignore) {
       throw new Error('Invalid address');
     }
 
-    const payment = payments.p2wpkh({ address: identity, network });
+    const payOpts = blindingKey ? { confidentialAddress: identity } : { address: identity };
+    const payment = payments.p2wpkh({ ...payOpts, network });
     this.scriptPubKey = payment.output!.toString('hex');
     this.address = payment.address!;
     this.network = network;
+    this.blindingKey = blindingKey;
   }
 
   static createTx(): string {
@@ -187,6 +191,38 @@ export function fetchUtxos(address: string, url: string): Promise<any> {
   return fetch(`${url}/address/${address}/utxo`).then(r => r.json());
 }
 
+export async function unblindUtxos(utxos: Array<any>, blindingKey: string, url: string) {
+  const promises = utxos.map(utxo =>
+    fetch(`${url}/tx/${utxo.txid}/hex`)
+      .then(r => r.text())
+      .then((txHex: string) => {
+        const prevTx = Transaction.fromHex(txHex);
+        const prevOut = prevTx.outs[utxo.vout];
+        return { prevOut, utxo };
+      })
+  );
+  try {
+    const prevOuts = await Promise.all(promises);
+    const unblinds = prevOuts.map((po: any) => {
+      const { prevOut, utxo } = po;
+      const result = confidential.unblindOutput(
+        prevOut.nonce,
+        Buffer.from(blindingKey, 'hex'),
+        prevOut.rangeProof!,
+        prevOut.value,
+        prevOut.asset,
+        prevOut.script
+      );
+      const assetHash = result.asset.reverse().toString('hex');
+      return { ...result, asset: assetHash, txid: utxo.txid, vout: utxo.vout };
+    });
+    return unblinds;
+  } catch (e) {
+    throw e;
+  }
+}
+
+
 export function faucet(address: string, url: string): Promise<any> {
   return fetch(`${url}/faucet`, {
     method: 'POST',
@@ -213,9 +249,14 @@ export async function fetchBalances(
   url: string,
   blindingKey?: string
 ): Promise<any> {
-  const fetchedData = (await fetchUtxos(address, url)).map((utxo: any) => {
+  let fetchedData = (await fetchUtxos(address, url)).map((utxo: any) => {
     return utxo;
   });
+
+  if (blindingKey && isValidBlindingKey(blindingKey)) {
+    fetchedData = await unblindUtxos(fetchedData, blindingKey, url);
+  }
+
   const balances = fetchedData.reduce(
     (storage: { [x: string]: any }, item: { [x: string]: any; value: any }) => {
       // get the first instance of the key by which we're grouping
@@ -255,3 +296,5 @@ export async function fetchBalances(
     utxos,
   };
 }
+
+

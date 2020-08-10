@@ -43,7 +43,6 @@ export default class Wallet extends React.Component<Props, State> {
     this.setState({ isLoading: true });
 
     const { identity, network, explorerUrl, blindingKey } = this.props;
-
     fetchBalances(
       identity,
       explorerUrl || (EXPLORER_URL as any)[network],
@@ -109,7 +108,7 @@ export default class Wallet extends React.Component<Props, State> {
   };
 
   render() {
-    const { network, identity } = this.props;
+    const { network, identity, blindingKey } = this.props;
     const {
       showCreate,
       showImport,
@@ -208,6 +207,7 @@ export default class Wallet extends React.Component<Props, State> {
             lbtc={LBTC_ASSET_HASH}
             identity={identity}
             network={network}
+            blindingKey={blindingKey}
           />
         )}
         {!isLoading && showImport && (

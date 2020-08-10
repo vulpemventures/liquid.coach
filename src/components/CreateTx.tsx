@@ -7,16 +7,17 @@ import InputWithCopy from '../elements/InputWithCopy';
 
 interface Props {
   identity: string;
+  blindingKey?: string;
   network: string;
   utxos: Object;
   lbtc: string;
 }
 
 const Create: React.FunctionComponent<Props> = props => {
-  const { identity, network, lbtc, utxos } = props;
+  const { identity, network, lbtc, utxos, blindingKey } = props;
 
   const currentNetwork = (networks as any)[network];
-  const wallet = new Wallet(identity, currentNetwork);
+  const wallet = new Wallet(identity, currentNetwork, blindingKey);
 
   const [encoded, setEncoded] = useState('');
 

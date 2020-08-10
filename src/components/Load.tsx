@@ -125,7 +125,7 @@ const Load: React.FunctionComponent<Props> = props => {
           type="checkbox"
           className="switch is-medium is-link"
           checked={isLiquid}
-          onChange={() => {}}
+          onChange={() => { }}
         />
         <label className="label">{`${isLiquid ? 'Liquid' : 'Regtest'}`}</label>
       </div>
@@ -134,14 +134,14 @@ const Load: React.FunctionComponent<Props> = props => {
         ref={pubkey}
         className="input is-medium mb-6"
         onChange={(e: any) => onAddressInputChange(e.target.value)}
-        placeholder="Your segwit address here..."
+        placeholder="Your native segwit address here..."
       />
       {showBlinding && (
         <input
           type="text"
           ref={blindingPrivKey}
           className="input is-medium mb-6"
-          placeholder="Your private blinding key here..."
+          placeholder="Your private blinding key here (hex format)..."
         />
       )}
       <br />
