@@ -31,7 +31,7 @@ const Create: React.FunctionComponent<Props> = props => {
     if (encoded.length === 0)
       return alert('Encode the transaction on every change before signing');
 
-    const mnemonic = prompt("What's your mnemonic?");
+    const mnemonic = prompt("What's your mnemonic? m/84'/0'/0'/0");
     if (!Wallet.isValidMnemonic(mnemonic!)) return alert('Mnemonic not valid');
 
     try {

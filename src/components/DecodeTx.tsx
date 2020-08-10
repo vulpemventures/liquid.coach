@@ -7,16 +7,17 @@ import InputWithCopy from '../elements/InputWithCopy';
 
 interface Props {
   identity: string;
+  blindingKey?: string;
   network: string;
   utxos: Object;
   lbtc: string;
 }
 
 const Decode: React.FunctionComponent<Props> = props => {
-  const { identity, network, lbtc, utxos } = props;
+  const { identity, network, lbtc, utxos, blindingKey } = props;
 
   const currentNetwork = (networks as any)[network];
-  const wallet = new Wallet(identity, currentNetwork);
+  const wallet = new Wallet(identity, currentNetwork, blindingKey);
 
   const [state, setState] = useState({
     hasBeenDecoded: false,
@@ -48,7 +49,7 @@ const Decode: React.FunctionComponent<Props> = props => {
     if (encoded.length === 0)
       return alert('Encode the transaction on every change before signing');
 
-    const mnemonic = prompt("What's your mnemonic?");
+    const mnemonic = prompt("What's your mnemonic? m/84'/0'/0'/0");
     if (!Wallet.isValidMnemonic(mnemonic!)) return alert('Mnemonic not valid');
 
     try {

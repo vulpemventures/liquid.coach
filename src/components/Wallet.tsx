@@ -216,6 +216,7 @@ export default class Wallet extends React.Component<Props, State> {
             lbtc={LBTC_ASSET_HASH}
             identity={identity}
             network={network}
+            blindingKey={blindingKey}
           />
         )}
       </div>
