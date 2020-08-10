@@ -4,7 +4,7 @@ import Load from './components/Load';
 import Wallet from './components/Wallet';
 import useGlobalStorage from 'use-global-storage';
 
-interface Props { }
+interface Props {}
 
 const App: React.FunctionComponent<Props> = () => {
   const useStorage = useGlobalStorage({
@@ -47,17 +47,17 @@ const App: React.FunctionComponent<Props> = () => {
                   }}
                 />
               ) : (
-                  <Wallet
-                    identity={state.identity}
-                    network={state.network}
-                    blindingKey={
-                      state.blindingKey && state.blindingKey.length > 0
-                        ? state.blindingKey
-                        : undefined
-                    }
-                    explorerUrl={state.explorerUrl}
-                  />
-                )}
+                <Wallet
+                  identity={state.identity}
+                  network={state.network}
+                  blindingKey={
+                    state.blindingKey && state.blindingKey.length > 0
+                      ? state.blindingKey
+                      : undefined
+                  }
+                  explorerUrl={state.explorerUrl}
+                />
+              )}
             </div>
           </div>
         </div>

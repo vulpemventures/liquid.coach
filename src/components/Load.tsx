@@ -125,7 +125,7 @@ const Load: React.FunctionComponent<Props> = props => {
           type="checkbox"
           className="switch is-medium is-link"
           checked={isLiquid}
-          onChange={() => { }}
+          onChange={() => {}}
         />
         <label className="label">{`${isLiquid ? 'Liquid' : 'Regtest'}`}</label>
       </div>

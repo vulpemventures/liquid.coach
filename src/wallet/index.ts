@@ -35,12 +35,14 @@ export default class LiquidWallet {
     try {
       address.toOutputScript(identity, network);
       if (blindingKey && !isValidBlindingKey)
-        throw new Error("Invalid blinding key");
+        throw new Error('Invalid blinding key');
     } catch (ignore) {
       throw new Error('Invalid address');
     }
 
-    const payOpts = blindingKey ? { confidentialAddress: identity } : { address: identity };
+    const payOpts = blindingKey
+      ? { confidentialAddress: identity }
+      : { address: identity };
     const payment = payments.p2wpkh({ ...payOpts, network });
     this.scriptPubKey = payment.output!.toString('hex');
     this.address = payment.address!;
@@ -191,7 +193,11 @@ export function fetchUtxos(address: string, url: string): Promise<any> {
   return fetch(`${url}/address/${address}/utxo`).then(r => r.json());
 }
 
-export async function unblindUtxos(utxos: Array<any>, blindingKey: string, url: string) {
+export async function unblindUtxos(
+  utxos: Array<any>,
+  blindingKey: string,
+  url: string
+) {
   const promises = utxos.map(utxo =>
     fetch(`${url}/tx/${utxo.txid}/hex`)
       .then(r => r.text())
@@ -221,7 +227,6 @@ export async function unblindUtxos(utxos: Array<any>, blindingKey: string, url: 
     throw e;
   }
 }
-
 
 export function faucet(address: string, url: string): Promise<any> {
   return fetch(`${url}/faucet`, {
@@ -296,5 +301,3 @@ export async function fetchBalances(
     utxos,
   };
 }
-
-
