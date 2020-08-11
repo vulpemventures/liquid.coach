@@ -196,6 +196,31 @@ export default class LiquidWallet {
       p =>
         p.witnessUtxo!.script.toString('hex') === wpkh.output!.toString('hex')
     );
+
+    if (this.blindingKey) {
+      const blindingPrivKeys = psbt.data.inputs.map(
+        (currInput: any, index: number) => {
+          console.log(currInput);
+          if (index === inputIndex) {
+            return Buffer.from(this.blindingKey!, 'hex');
+          }
+          return ECPair.makeRandom({ network: this.network }).privateKey!;
+        }
+      );
+
+      const blindingPubKeys = psbt.data.outputs.map(
+        () => ECPair.makeRandom({ network: this.network }).publicKey!
+      );
+      blindingPubKeys.pop();
+
+      try {
+        console.log(blindingPubKeys.length, psbt.data.outputs.length);
+        psbt.blindOutputs(blindingPrivKeys, blindingPubKeys);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
     psbt.signInput(inputIndex, keyPair);
     psbt.validateSignaturesOfInput(inputIndex);
 
@@ -239,7 +264,14 @@ export async function unblindUtxos(
         prevOut.script
       );
       const assetHash = result.asset.reverse().toString('hex');
-      return { ...result, asset: assetHash, txid: utxo.txid, vout: utxo.vout };
+      return {
+        ...result,
+        rangeProof: prevOut.rangeProof,
+        surjectionProof: prevOut.surjectionProof,
+        asset: assetHash,
+        txid: utxo.txid,
+        vout: utxo.vout,
+      };
     });
     return unblinds;
   } catch (e) {
