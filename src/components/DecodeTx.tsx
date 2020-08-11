@@ -49,15 +49,28 @@ const Decode: React.FunctionComponent<Props> = props => {
     if (encoded.length === 0)
       return alert('Encode the transaction on every change before signing');
 
-    const mnemonic = prompt("What's your mnemonic? m/84'/0'/0'/0");
-    if (!Wallet.isValidMnemonic(mnemonic!)) return alert('Mnemonic not valid');
-
-    try {
-      const hex = wallet.signPsbtWithMnemonic(encoded, mnemonic!);
-      setEncoded(hex);
-    } catch (ignore) {
-      return alert(ignore);
+    const mnemonicOrWif = prompt('Enter your mnemonic or WIF private key');
+    if (Wallet.isValidMnemonic(mnemonicOrWif!)) {
+      try {
+        const hex = wallet.signPsbtWithMnemonic(encoded, mnemonicOrWif!);
+        setEncoded(hex);
+        return;
+      } catch (ignore) {
+        return alert(ignore);
+      }
     }
+
+    if (Wallet.isValidWIF(mnemonicOrWif!, currentNetwork)) {
+      try {
+        const hex = wallet.signPsbtWithPrivateKey(encoded, mnemonicOrWif!);
+        setEncoded(hex);
+        return;
+      } catch (ignore) {
+        return alert(ignore);
+      }
+    }
+
+    return alert('Mnemonic or WIF not valid');
   };
 
   return (

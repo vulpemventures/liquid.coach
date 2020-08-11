@@ -6,6 +6,7 @@ import {
   payments,
   Network,
   Transaction,
+  ECPairInterface,
 } from 'liquidjs-lib';
 import * as bip39 from 'bip39';
 import * as bip32 from 'bip32';
@@ -57,6 +58,15 @@ export default class LiquidWallet {
 
   static isValidMnemonic(m: string): boolean {
     return bip39.validateMnemonic(m);
+  }
+
+  static isValidWIF(wif: string, network: Network): boolean {
+    try {
+      ECPair.fromWIF(wif, network);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   decodeTx(psbtBase64: string): any {
@@ -167,24 +177,33 @@ export default class LiquidWallet {
     const root = bip32.fromSeed(seed, this.network);
     const node = root.derivePath("m/84'/0'/0'/0");
     const keyPair = ECPair.fromWIF(node.toWIF(), this.network);
+    const decoded = Psbt.fromBase64(psbtBase64);
+    return this.sign(decoded, keyPair);
+  }
+
+  signPsbtWithPrivateKey(psbtBase64: string, wif: string) {
+    const keyPair = ECPair.fromWIF(wif, this.network);
+    const decoded = Psbt.fromBase64(psbtBase64);
+    return this.sign(decoded, keyPair);
+  }
+
+  private sign(psbt: Psbt, keyPair: ECPairInterface) {
     const wpkh = payments.p2wpkh({
       pubkey: keyPair.publicKey,
       network: this.network,
     });
-
-    const decoded = Psbt.fromBase64(psbtBase64);
-    const inputIndex = decoded.data.inputs.findIndex(
+    const inputIndex = psbt.data.inputs.findIndex(
       p =>
         p.witnessUtxo!.script.toString('hex') === wpkh.output!.toString('hex')
     );
-    decoded.signInput(inputIndex, keyPair);
-    decoded.validateSignaturesOfInput(inputIndex);
+    psbt.signInput(inputIndex, keyPair);
+    psbt.validateSignaturesOfInput(inputIndex);
 
     //Let's finalize all inputs
-    decoded.validateSignaturesOfAllInputs();
-    decoded.finalizeAllInputs();
+    psbt.validateSignaturesOfAllInputs();
+    psbt.finalizeAllInputs();
 
-    const hex = decoded.extractTransaction().toHex();
+    const hex = psbt.extractTransaction().toHex();
     return hex;
   }
 }

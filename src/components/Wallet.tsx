@@ -7,7 +7,8 @@ import Balances from '../elements/Balances';
 import Spinner from '../elements/Spinner';
 
 import { fetchBalances, faucet, EXPLORER_URL, mint } from '../wallet';
-import { networks } from 'liquidjs-lib';
+import { networks, address } from 'liquidjs-lib';
+import TextWithCopy from '../elements/TextWithCopy';
 
 interface Props {
   identity: string;
@@ -123,7 +124,21 @@ export default class Wallet extends React.Component<Props, State> {
 
     return (
       <div className="column has-text-centered">
-        <h1 className="title is-4">{identity}</h1>
+        <TextWithCopy value={identity} textClass="title is-5" />
+
+        {blindingKey && (
+          <span>
+            <br />
+            <p className="title is-6">UNCONFIDENTIAL</p>
+            <TextWithCopy
+              value={address.fromConfidential(identity).unconfidentialAddress}
+              textClass="title is-5"
+            />
+            <br />
+            <br />
+          </span>
+        )}
+
         {!isLoading && hasBalances && (
           <Balances balances={balances} lbtc={LBTC_ASSET_HASH} />
         )}
