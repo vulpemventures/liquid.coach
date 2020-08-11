@@ -1,10 +1,19 @@
 import { address, Network, confidential, networks } from 'liquidjs-lib';
 
-export const validate = (
+function isValidConfidentialAddress(value: string): boolean {
+  try {
+    address.fromConfidential(value);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+export function validate(
   value: any,
   type: string,
   network: Network = networks.regtest
-): Boolean => {
+): boolean {
   switch (type) {
     case 'asset':
       if (value.length !== 64) {
@@ -13,8 +22,11 @@ export const validate = (
       return true;
     case 'address':
       try {
+        if (isValidConfidentialAddress(value))
+          throw new Error('Unconfidential only');
         if (value !== 'LBTC_FEES') address.toOutputScript(value, network);
       } catch (ignore) {
+        console.error(ignore);
         return false;
       }
       return true;
@@ -28,4 +40,4 @@ export const validate = (
     default:
       return false;
   }
-};
+}

@@ -32,11 +32,16 @@ const App: React.FunctionComponent<Props> = () => {
             <div className="columns">
               {!state || !state.loaded ? (
                 <Load
-                  onLoad={(xpubOrAddress: string, selectedNetwork: any) => {
+                  onLoad={(
+                    xpubOrAddress: string,
+                    selectedNetwork: any,
+                    blindingPrivKey: string
+                  ) => {
                     setState({
                       loaded: true,
                       identity: xpubOrAddress,
                       network: selectedNetwork,
+                      blindingKey: blindingPrivKey,
                       ...state,
                     });
                   }}
@@ -45,6 +50,11 @@ const App: React.FunctionComponent<Props> = () => {
                 <Wallet
                   identity={state.identity}
                   network={state.network}
+                  blindingKey={
+                    state.blindingKey && state.blindingKey.length > 0
+                      ? state.blindingKey
+                      : undefined
+                  }
                   explorerUrl={state.explorerUrl}
                 />
               )}

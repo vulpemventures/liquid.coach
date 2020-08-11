@@ -5,7 +5,7 @@
 */
 import b58 from 'bs58check';
 import * as bip32 from 'bip32';
-import { address, Network } from 'liquidjs-lib';
+import { address, Network, ECPair } from 'liquidjs-lib';
 
 const prefixes = new Map([
   ['xpub', '0488b21e'],
@@ -67,4 +67,13 @@ export function isValidAddress(value: string, network: Network) {
   }
 
   return true;
+}
+
+export function isValidBlindingKey(value: string): boolean {
+  try {
+    ECPair.fromPrivateKey(Buffer.from(value, 'hex'));
+    return true;
+  } catch (e) {
+    return false;
+  }
 }

@@ -7,16 +7,17 @@ import InputWithCopy from '../elements/InputWithCopy';
 
 interface Props {
   identity: string;
+  blindingKey?: string;
   network: string;
   utxos: Object;
   lbtc: string;
 }
 
 const Create: React.FunctionComponent<Props> = props => {
-  const { identity, network, lbtc, utxos } = props;
+  const { identity, network, lbtc, utxos, blindingKey } = props;
 
   const currentNetwork = (networks as any)[network];
-  const wallet = new Wallet(identity, currentNetwork);
+  const wallet = new Wallet(identity, currentNetwork, blindingKey);
 
   const [encoded, setEncoded] = useState('');
 
@@ -30,15 +31,28 @@ const Create: React.FunctionComponent<Props> = props => {
     if (encoded.length === 0)
       return alert('Encode the transaction on every change before signing');
 
-    const mnemonic = prompt("What's your mnemonic?");
-    if (!Wallet.isValidMnemonic(mnemonic!)) return alert('Mnemonic not valid');
-
-    try {
-      const hex = wallet.signPsbtWithMnemonic(encoded, mnemonic!);
-      setEncoded(hex);
-    } catch (ignore) {
-      return alert(ignore);
+    const mnemonicOrWif = prompt('Enter your mnemonic or WIF private key');
+    if (Wallet.isValidMnemonic(mnemonicOrWif!)) {
+      try {
+        const hex = wallet.signPsbtWithMnemonic(encoded, mnemonicOrWif!);
+        setEncoded(hex);
+        return;
+      } catch (ignore) {
+        return alert(ignore);
+      }
     }
+
+    if (Wallet.isValidWIF(mnemonicOrWif!, currentNetwork)) {
+      try {
+        const hex = wallet.signPsbtWithPrivateKey(encoded, mnemonicOrWif!);
+        setEncoded(hex);
+        return;
+      } catch (ignore) {
+        return alert(ignore);
+      }
+    }
+
+    return alert('Mnemonic or WIF not valid');
   };
 
   return (

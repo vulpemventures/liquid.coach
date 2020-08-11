@@ -6,11 +6,11 @@ import {
   payments,
   Network,
   Transaction,
+  ECPairInterface,
 } from 'liquidjs-lib';
 import * as bip39 from 'bip39';
 import * as bip32 from 'bip32';
-import { toAssetHash } from '../helpers';
-
+import { toAssetHash, isValidBlindingKey } from '../helpers';
 const fetch = window.fetch;
 
 export const EXPLORER_URL = {
@@ -28,20 +28,27 @@ interface UtxoInterface {
 
 export default class LiquidWallet {
   scriptPubKey: string;
+  blindingKey?: string;
   address: string;
   network: Network;
 
-  constructor(identity: string, network: Network) {
+  constructor(identity: string, network: Network, blindingKey?: string) {
     try {
       address.toOutputScript(identity, network);
+      if (blindingKey && !isValidBlindingKey)
+        throw new Error('Invalid blinding key');
     } catch (ignore) {
       throw new Error('Invalid address');
     }
 
-    const payment = payments.p2wpkh({ address: identity, network });
+    const payOpts = blindingKey
+      ? { confidentialAddress: identity }
+      : { address: identity };
+    const payment = payments.p2wpkh({ ...payOpts, network });
     this.scriptPubKey = payment.output!.toString('hex');
     this.address = payment.address!;
     this.network = network;
+    this.blindingKey = blindingKey;
   }
 
   static createTx(): string {
@@ -51,6 +58,15 @@ export default class LiquidWallet {
 
   static isValidMnemonic(m: string): boolean {
     return bip39.validateMnemonic(m);
+  }
+
+  static isValidWIF(wif: string, network: Network): boolean {
+    try {
+      ECPair.fromWIF(wif, network);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   decodeTx(psbtBase64: string): any {
@@ -161,30 +177,74 @@ export default class LiquidWallet {
     const root = bip32.fromSeed(seed, this.network);
     const node = root.derivePath("m/84'/0'/0'/0");
     const keyPair = ECPair.fromWIF(node.toWIF(), this.network);
+    const decoded = Psbt.fromBase64(psbtBase64);
+    return this.sign(decoded, keyPair);
+  }
+
+  signPsbtWithPrivateKey(psbtBase64: string, wif: string) {
+    const keyPair = ECPair.fromWIF(wif, this.network);
+    const decoded = Psbt.fromBase64(psbtBase64);
+    return this.sign(decoded, keyPair);
+  }
+
+  private sign(psbt: Psbt, keyPair: ECPairInterface) {
     const wpkh = payments.p2wpkh({
       pubkey: keyPair.publicKey,
       network: this.network,
     });
-
-    const decoded = Psbt.fromBase64(psbtBase64);
-    const inputIndex = decoded.data.inputs.findIndex(
+    const inputIndex = psbt.data.inputs.findIndex(
       p =>
         p.witnessUtxo!.script.toString('hex') === wpkh.output!.toString('hex')
     );
-    decoded.signInput(inputIndex, keyPair);
-    decoded.validateSignaturesOfInput(inputIndex);
+    psbt.signInput(inputIndex, keyPair);
+    psbt.validateSignaturesOfInput(inputIndex);
 
     //Let's finalize all inputs
-    decoded.validateSignaturesOfAllInputs();
-    decoded.finalizeAllInputs();
+    psbt.validateSignaturesOfAllInputs();
+    psbt.finalizeAllInputs();
 
-    const hex = decoded.extractTransaction().toHex();
+    const hex = psbt.extractTransaction().toHex();
     return hex;
   }
 }
 
 export function fetchUtxos(address: string, url: string): Promise<any> {
   return fetch(`${url}/address/${address}/utxo`).then(r => r.json());
+}
+
+export async function unblindUtxos(
+  utxos: Array<any>,
+  blindingKey: string,
+  url: string
+) {
+  const promises = utxos.map(utxo =>
+    fetch(`${url}/tx/${utxo.txid}/hex`)
+      .then(r => r.text())
+      .then((txHex: string) => {
+        const prevTx = Transaction.fromHex(txHex);
+        const prevOut = prevTx.outs[utxo.vout];
+        return { prevOut, utxo };
+      })
+  );
+  try {
+    const prevOuts = await Promise.all(promises);
+    const unblinds = prevOuts.map((po: any) => {
+      const { prevOut, utxo } = po;
+      const result = confidential.unblindOutput(
+        prevOut.nonce,
+        Buffer.from(blindingKey, 'hex'),
+        prevOut.rangeProof!,
+        prevOut.value,
+        prevOut.asset,
+        prevOut.script
+      );
+      const assetHash = result.asset.reverse().toString('hex');
+      return { ...result, asset: assetHash, txid: utxo.txid, vout: utxo.vout };
+    });
+    return unblinds;
+  } catch (e) {
+    throw e;
+  }
 }
 
 export function faucet(address: string, url: string): Promise<any> {
@@ -210,9 +270,17 @@ export function mint(
 }
 export async function fetchBalances(
   address: string,
-  url: string
+  url: string,
+  blindingKey?: string
 ): Promise<any> {
-  const fetchedData = await fetchUtxos(address, url);
+  let fetchedData = (await fetchUtxos(address, url)).map((utxo: any) => {
+    return utxo;
+  });
+
+  if (blindingKey && isValidBlindingKey(blindingKey)) {
+    fetchedData = await unblindUtxos(fetchedData, blindingKey, url);
+  }
+
   const balances = fetchedData.reduce(
     (storage: { [x: string]: any }, item: { [x: string]: any; value: any }) => {
       // get the first instance of the key by which we're grouping

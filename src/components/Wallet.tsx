@@ -7,12 +7,14 @@ import Balances from '../elements/Balances';
 import Spinner from '../elements/Spinner';
 
 import { fetchBalances, faucet, EXPLORER_URL, mint } from '../wallet';
-import { networks } from 'liquidjs-lib';
+import { networks, address } from 'liquidjs-lib';
+import TextWithCopy from '../elements/TextWithCopy';
 
 interface Props {
   identity: string;
   network: string;
   explorerUrl?: string;
+  blindingKey?: string;
 }
 
 interface State {
@@ -41,9 +43,12 @@ export default class Wallet extends React.Component<Props, State> {
   getBalances = () => {
     this.setState({ isLoading: true });
 
-    const { identity, network, explorerUrl } = this.props;
-
-    fetchBalances(identity, explorerUrl || (EXPLORER_URL as any)[network])
+    const { identity, network, explorerUrl, blindingKey } = this.props;
+    fetchBalances(
+      identity,
+      explorerUrl || (EXPLORER_URL as any)[network],
+      blindingKey
+    )
       .then((data: any) => {
         if (Object.keys(data.utxos).length > 0)
           this.setState({
@@ -104,7 +109,7 @@ export default class Wallet extends React.Component<Props, State> {
   };
 
   render() {
-    const { network, identity } = this.props;
+    const { network, identity, blindingKey } = this.props;
     const {
       showCreate,
       showImport,
@@ -119,7 +124,21 @@ export default class Wallet extends React.Component<Props, State> {
 
     return (
       <div className="column has-text-centered">
-        <h1 className="title is-4">{identity}</h1>
+        <TextWithCopy value={identity} textClass="title is-5" />
+
+        {blindingKey && (
+          <span>
+            <br />
+            <p className="title is-6">UNCONFIDENTIAL</p>
+            <TextWithCopy
+              value={address.fromConfidential(identity).unconfidentialAddress}
+              textClass="title is-5"
+            />
+            <br />
+            <br />
+          </span>
+        )}
+
         {!isLoading && hasBalances && (
           <Balances balances={balances} lbtc={LBTC_ASSET_HASH} />
         )}
@@ -203,6 +222,7 @@ export default class Wallet extends React.Component<Props, State> {
             lbtc={LBTC_ASSET_HASH}
             identity={identity}
             network={network}
+            blindingKey={blindingKey}
           />
         )}
         {!isLoading && showImport && (
@@ -211,6 +231,7 @@ export default class Wallet extends React.Component<Props, State> {
             lbtc={LBTC_ASSET_HASH}
             identity={identity}
             network={network}
+            blindingKey={blindingKey}
           />
         )}
       </div>
