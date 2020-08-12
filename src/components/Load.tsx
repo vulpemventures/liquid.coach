@@ -6,7 +6,6 @@ import * as bip32 from 'bip32';
 
 import InputWithCopy from '../elements/InputWithCopy';
 import {
-  isValidXpub,
   isValidAddress,
   isValidBlindingKey,
   changeVersionBytes,
@@ -39,14 +38,10 @@ const Load: React.FunctionComponent<Props> = props => {
   };
 
   const checkInput = () => {
-    if (!pubkey || !pubkey.current)
-      return alert('Missing either address or extended public key');
+    if (!pubkey || !pubkey.current) return alert('Missing address');
 
     const pub: any = (pubkey.current as any).value;
-    if (
-      !isValidXpub(pub, currentNetwork) &&
-      !isValidAddress(pub, currentNetwork)
-    )
+    if (!isValidAddress(pub, currentNetwork))
       return alert('Given address is not a valid segwit address');
 
     if (showBlinding) {
@@ -76,14 +71,17 @@ const Load: React.FunctionComponent<Props> = props => {
     const seed = bip39.mnemonicToSeedSync(mnemonic);
     const root = bip32.fromSeed(seed, currentNetwork);
     const xpub = root.toBase58();
-    const zpub = changeVersionBytes(xpub, 'zpub');
+    const version = isLiquid ? 'zpub' : 'vpub';
+    const extPub = changeVersionBytes(xpub, version);
 
     return (
       <div className="modal is-active">
         <div className="modal-background"></div>
         <div className="modal-card">
           <header className="modal-card-head">
-            <p className="modal-card-title">Liquid regtest wallet</p>
+            <p className="modal-card-title">
+              Liquid {`${!isLiquid ? 'regtest' : ''}`} wallet
+            </p>
           </header>
           <section className="modal-card-body">
             <label className="label">Mnemonic</label>
@@ -91,8 +89,12 @@ const Load: React.FunctionComponent<Props> = props => {
               You will never see it again. You may want to write it down
             </p>
             <InputWithCopy value={mnemonic} bgColor="is-info is-light" />
+            <p className="subtitle is-6">
+              The derivation path used for generating the address is{' '}
+              <b>m/84'/0'/0'/0</b>
+            </p>
             <label className="label">Extended public key</label>
-            <InputWithCopy value={zpub} bgColor="is-info is-light" />
+            <InputWithCopy value={extPub} bgColor="is-info is-light" />
           </section>
           <footer className="modal-card-foot">
             <button

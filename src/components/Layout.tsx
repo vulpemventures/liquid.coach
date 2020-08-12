@@ -32,7 +32,7 @@ class Layout extends React.Component<Props> {
 
     const withExplorer = this.props.showExplorer ? (
       <span className="button is-pulled-right" onClick={() => this.changeUrl()}>
-        Custom explorer
+        Explorer
       </span>
     ) : null;
 
@@ -41,11 +41,15 @@ class Layout extends React.Component<Props> {
         <div className="hero-body">
           <div className="container">
             <div className="columns">
-              <div className="column is-8 is-offset-2 has-text-centered">
+              <div className="column is-8 is-desktop is-offset-2 has-text-centered">
                 <h1 className="title">{this.props.title}</h1>
               </div>
-              <div className="column has-text-centered">{withExplorer}</div>
-              <div className="column has-text-centered">{withCleanButton}</div>
+              <div className="column is-1 has-text-centered">
+                {withExplorer}
+              </div>
+              <div className="column is-1 has-text-centered">
+                {withCleanButton}
+              </div>
             </div>
           </div>
         </div>
