@@ -7,7 +7,7 @@ Liquid.Coach will help you create and manage Elements transactions .
 
 Below is a list of commands you will probably find useful.
 
-### `yarn start`
+### `yarn serve`
 
 Runs the project in development/watch mode. Your project will be rebuilt upon changes. Error messages are pretty printed and formatted for compatibility VS Code's Problems tab. Your library will be rebuilt if you make edits.
 
