@@ -188,16 +188,8 @@ export default class LiquidWallet {
   }
 
   private sign(psbt: Psbt, keyPair: ECPairInterface) {
-    const wpkh = payments.p2wpkh({
-      pubkey: keyPair.publicKey,
-      network: this.network,
-    });
-    const inputIndex = psbt.data.inputs.findIndex(
-      p =>
-        p.witnessUtxo!.script.toString('hex') === wpkh.output!.toString('hex')
-    );
-    psbt.signInput(inputIndex, keyPair);
-    psbt.validateSignaturesOfInput(inputIndex);
+
+    this.partiallySign(psbt, keyPair);
 
     //Let's finalize all inputs
     psbt.validateSignaturesOfAllInputs();
@@ -206,7 +198,21 @@ export default class LiquidWallet {
     const hex = psbt.extractTransaction().toHex();
     return hex;
   }
+
+  private partiallySign(psbt: Psbt, keyPair: ECPairInterface) {
+    psbt.data.inputs.forEach((_: any, index: number) => {
+      try {
+        psbt.signInput(index, keyPair);
+        psbt.validateSignaturesOfInput(index);
+      } catch (ignore) {
+        console.warn(ignore)
+      }
+    });
+
+    return psbt
+  }
 }
+
 
 export function fetchUtxos(address: string, url: string): Promise<any> {
   return fetch(`${url}/address/${address}/utxo`).then(r => r.json());

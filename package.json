@@ -38,7 +38,8 @@
   "author": "Vulpem Ventures",
   "browserslist": [
     "last 2 versions",
-    "not dead"
+    "not dead",
+    "not op_mob > 1"
   ],
   "module": "dist/liquid.coach.esm.js",
   "devDependencies": {
