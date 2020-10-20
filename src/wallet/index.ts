@@ -188,7 +188,6 @@ export default class LiquidWallet {
   }
 
   private sign(psbt: Psbt, keyPair: ECPairInterface) {
-
     this.partiallySign(psbt, keyPair);
 
     //Let's finalize all inputs
@@ -205,14 +204,13 @@ export default class LiquidWallet {
         psbt.signInput(index, keyPair);
         psbt.validateSignaturesOfInput(index);
       } catch (ignore) {
-        console.warn(ignore)
+        console.warn(ignore);
       }
     });
 
-    return psbt
+    return psbt;
   }
 }
-
 
 export function fetchUtxos(address: string, url: string): Promise<any> {
   return fetch(`${url}/address/${address}/utxo`).then(r => r.json());
