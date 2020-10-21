@@ -22,14 +22,14 @@ script:
     if [ "$TRAVIS_REPO_SLUG" != "vulpemventures/liquid-coach" ] || [ "$TRAVIS_BRANCH" != "master" ]; then
       docker buildx build \
         --progress plain \
-        --platform=linux/amd64,linux/arm/v7 \
+        --platform=linux/amd64 \
         .
       exit $?
     fi
     echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin &> /dev/null
     docker buildx build \
       --progress plain \
-      --platform=linux/amd64,linux/arm/v7 \
+      --platform=linux/amd64 \
       -t vulpemventures/liquid-coach:latest \
       --push \
       .
