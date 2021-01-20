@@ -24,6 +24,8 @@ interface UtxoInterface {
   asset: string;
   value: number;
   script?: string;
+  partialSig?: Array<any>;
+  sighashType?: number;
 }
 
 export default class LiquidWallet {
@@ -80,7 +82,7 @@ export default class LiquidWallet {
     const bufferTx: Buffer = psbt.data.globalMap.unsignedTx.toBuffer();
     const transaction: Transaction = Transaction.fromBuffer(bufferTx);
 
-    let inputs: Array<any> = [],
+    let inputs: Array<UtxoInterface> = [],
       outputs: Array<any> = [];
 
     psbt.data.inputs.forEach((i, index) => {
@@ -91,6 +93,8 @@ export default class LiquidWallet {
         i.witnessUtxo?.value!
       );
       const asset = toAssetHash(i.witnessUtxo?.asset!);
+      const partialSig = i.partialSig;
+      const sighashType = i.sighashType;
 
       inputs.push({
         txid,
@@ -98,6 +102,8 @@ export default class LiquidWallet {
         value,
         asset,
         script,
+        partialSig,
+        sighashType,
       });
     });
 
@@ -124,7 +130,7 @@ export default class LiquidWallet {
 
   updateTx(
     psbtBase64: string,
-    inputs: Array<any>,
+    inputs: Array<UtxoInterface>,
     outputs: Array<any>
   ): string {
     let psbt: Psbt;
@@ -149,7 +155,9 @@ export default class LiquidWallet {
           value: confidential.satoshiToConfidentialValue(Number(i.value)),
           nonce: Buffer.from('00', 'hex'),
         },
-      } as any)
+        partialSig: i.partialSig || [],
+        sighashType: i.sighashType || Transaction.SIGHASH_ALL,
+      })
     );
 
     outputs.forEach(o => {
@@ -188,31 +196,32 @@ export default class LiquidWallet {
   }
 
   private sign(psbt: Psbt, keyPair: ECPairInterface) {
+    const signedPsbt = this.partiallySign(psbt, keyPair);
 
-    this.partiallySign(psbt, keyPair);
-
-    //Let's finalize all inputs
-    psbt.validateSignaturesOfAllInputs();
-    psbt.finalizeAllInputs();
-
-    const hex = psbt.extractTransaction().toHex();
+    const hex = signedPsbt.extractTransaction().toHex();
     return hex;
   }
 
   private partiallySign(psbt: Psbt, keyPair: ECPairInterface) {
-    psbt.data.inputs.forEach((_: any, index: number) => {
+    psbt.data.inputs.forEach((input: any, index: number) => {
+      if (input.partialSig && input.partialSig.length > 0) {
+        psbt.validateSignaturesOfInput(index);
+        psbt.finalizeInput(index);
+        return;
+      }
+
       try {
         psbt.signInput(index, keyPair);
         psbt.validateSignaturesOfInput(index);
+        psbt.finalizeInput(index);
       } catch (ignore) {
-        console.warn(ignore)
+        console.warn(ignore);
       }
     });
 
-    return psbt
+    return psbt;
   }
 }
-
 
 export function fetchUtxos(address: string, url: string): Promise<any> {
   return fetch(`${url}/address/${address}/utxo`).then(r => r.json());
